@@ -24,7 +24,7 @@ Usage
 3) Html format results from SimC for the top 5 dps profiles will be saved in ./output/html/ . Open those to see what gear os equipped for that profile.
 
 
-The system will attempt to spawn multiple threads for simming. If more than CPUs are avaiable this value will be ([# of CPUs] - 2), otherwise only 1 thread will perform sims.
+The system will attempt to spawn multiple threads for simming. If more than 2 CPUs are available this value will be ([# of CPUs] - 2), otherwise only 1 thread will perform sims.
 
 This default can be overriden in a config file by adding the following:
 
