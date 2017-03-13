@@ -17,12 +17,7 @@ simc-715-02-win64-13c760b
 
 Usage
 ----
-1)
-    Run `launch.bat`
-
-    or
-
-    From command line: `python main.py`
+1) Run: `launch.bat` *or* from command line: `python main.py`
 
 2) Enter name of a file containing an export of data in autosimc format from SimPermut (file name can also be passed as first argument on command line)
 
