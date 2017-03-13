@@ -17,7 +17,8 @@ simc-715-02-win64-13c760b
 
 Usage
 ----
-1) Run `launch.bat`
+1)
+    Run `launch.bat`
 
     or
 
@@ -41,6 +42,7 @@ maxthreads=#
 Future
 ----
 1) Cleaner output of gear for top profiles. Having to open separate html files kind of sucks.
-2) Configuration options:
+2) Clean up simc profiles after execution. Currently if you run a large number of gear combinations a new file for each will be created and stay around in `.\profiles\` until after all sims are done.
+3) Configuration options:
   to sim multiple fight types (patchwerk, heavy movement, cleave)
   to optimise for a different metric (DPS, DPS to Primary target in cleave fights, DTPS)
