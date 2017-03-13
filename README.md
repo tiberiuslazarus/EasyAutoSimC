@@ -17,18 +17,25 @@ simc-715-02-win64-13c760b
 
 Usage
 ----
-1) Run launch.bat
-  or
-  From command line: python main.py
-2) enter name of a file containing an export of data in autosimc format from SimPermut (file name can also be passed as first argument on command line)
+1) Run `launch.bat`
+
+    or
+
+    From command line: `python main.py`
+
+2) Enter name of a file containing an export of data in autosimc format from SimPermut (file name can also be passed as first argument on command line)
+
 3) Html format results from SimC for the top 5 dps profiles will be saved in ./output/html/ . Open those to see what gear os equipped for that profile.
 
 
-The system will attempt to spawn multiple threads for simming. If more than CPUs are avaiable this value will be ([# of CPUs] - 2), otherwise only 1 thread will perform sims. This default can be overriden in a config file by adding the following:
+The system will attempt to spawn multiple threads for simming. If more than CPUs are avaiable this value will be ([# of CPUs] - 2), otherwise only 1 thread will perform sims.
 
+This default can be overriden in a config file by adding the following:
+
+```
 [Sim]
 maxthreads=#
-
+```
 
 
 Future
