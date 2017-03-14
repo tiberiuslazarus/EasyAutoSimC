@@ -9,21 +9,28 @@ import time
 def main():
     config = loadConfig()
     setup(config)
-    profiles = generateProfiles(config)
-    topDps = runSims(profiles["valid"], config["Sim"]["maxthreads"])
+    generatedProfiles = generateProfiles(config)
+    for fightStyle in generatedProfiles:
+        print("---Simming profiles for fight style %s---" % fightStyle)
+        topDps = runSims(generatedProfiles[fightStyle]["valid"], config["Sim"]["maxthreads"])
 
-    generateHtmlProfiles([x[1] for x in topDps])
+        topDpsProfiles = []
+        for dpsTuple in topDps:
+            topDpsProfiles.append((dpsTuple[0], dpsTuple[1]))
 
-    topDpsProfiles = [x[1] for x in topDps]
-    print("Top %s DPS results available at:" % len(topDps))
-    for i in range(len(topDps)):
-        print("%s: output\\html\\%s.html (%s)" % (i+1, topDps[i][1], topDps[i][0]))
-    # analyzeSims(profiles)
+        generateHtmlProfiles(topDpsProfiles)
+
+        topDpsProfiles = [x[1] for x in topDps]
+        print("Top %s DPS for %s results available at:" % (len(topDps), fightStyle))
+        for i in range(len(topDps)):
+            print("%s: output\\html\\%s_%s.html (%s)" % (i+1, topDps[i][0], topDps[i][1], topDps[i][2]))
+        print("-------")
+        print()
 
 def setup(config):
-    if not os.path.exists(config["player"]["profilename"]):
-        os.makedirs(config["player"]["profilename"])
-    os.chdir(config["player"]["profilename"])
+    if not os.path.exists(config["Profile"]["profilename"]):
+        os.makedirs(config["Profile"]["profilename"])
+    os.chdir(config["Profile"]["profilename"])
     for dir in ["output", "output\\json", "output\\html", "profiles"]:
         if not os.path.exists(dir):
             os.makedirs(dir)
@@ -31,13 +38,13 @@ def setup(config):
 def loadConfig():
     config = configparser.ConfigParser()
 
-    if (len(sys.argv) > 1 and os.path.exists(sys.argv[1])):
+    if (len(sys.argv) > 1 and os.path.isfile(sys.argv[1])):
         configFile = sys.argv[1]
     else:
         print("Enter name of exported settings file:")
         configFile = input()
 
-    if os.path.exists(configFile):
+    if os.path.isfile(configFile):
         config.read(configFile)
     else:
         print("ERROR: Config file (%s) does not exist." % configFile)
@@ -53,20 +60,10 @@ def loadConfig():
         config["Sim"] = {}
         config["Sim"]["maxthreads"] = str(max(multiprocessing.cpu_count()-2, 1))
         print("INFO: maxthreads option not set. Defaulting maxthreads to %s" % config["Sim"]["maxthreads"])
-    profile = config["Profile"]
-    player = {}
-    player["profilename"]=profile["profilename"]
-    player["class"]=profile["class"]
-    player["race"]=profile["race"]
-    player["level"]=profile["level"]
-    player["spec"]=profile["spec"]
-    player["role"]=profile["role"]
-    player["position"]=profile["position"]
-    player["talents"]=profile["talents"]
-    player["artifact"]=profile["artifact"]
-    player["other"]=profile["other"]
 
-    config["player"] = player
+    if not config.has_option("Profile", "fightstyle"):
+        config["Profile"]["fightstyle"] = "Patchwerk"
+        print("INFO: Defaulting fightstyle to Patchwerk.")
 
     return config
 

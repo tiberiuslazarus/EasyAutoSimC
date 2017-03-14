@@ -5,16 +5,27 @@ import heapq
 from operator import itemgetter
 from multiprocessing import Pool
 
-def processFile(profileId):
-    with open("output\\json\\%s.json" % profileId, "r") as simFile:
+def processFile(fightStyle, profileId):
+    with open("output\\json\\%s_%s.json" % (fightStyle, profileId), "r") as simFile:
         simInfo = json.load(simFile)
-        return (simInfo["sim"]["players"][0]["collected_data"]["dps"]["mean"],profileId)
+        return (fightStyle, profileId, simInfo["sim"]["players"][0]["collected_data"]["dps"]["mean"])
 
-def analyzeSims(profiles):
+def analyzeSims(profiles, maxthreads):
     analysisStartTime = time.time()
-    dpsList = Pool().map(processFile, profiles)
+    dpsList = Pool(int(maxthreads)).starmap(processFile, profiles)
 
-    return [dpsTuple for dpsTuple in heapq.nlargest(5,dpsList,key=itemgetter(0))]
+    return [dpsTuple for dpsTuple in heapq.nlargest(5,dpsList,key=itemgetter(2))]
+
+def getTopDps(profiles):
+    topDps = {}
+    for profile in profiles:
+        fightStyle, profileId, dps = profile[0], profile[1], profile[2]
+        topDps.setDefault(fightStyle, []).append(profile)
+    for fightStyle, profiles in topDps:
+        topDps[fightStyle] = [dpsTuple for dpsTuple in heapq.nlargest(5,dpsList,key=itemgetter(2))]
+    print(topDps)
+    return topDps
+
 
 if __name__ == "__main__":
     outputFiles = os.listdir(".\\output\\json")
