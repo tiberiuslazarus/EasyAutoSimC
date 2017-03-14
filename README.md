@@ -35,8 +35,10 @@ maxthreads=#
 
 Fight styles can be configured and the top 5 dps for each fight style will be output.
 
+```
 [Sim]
 fightstyle=HelterSkelter,Patchwerk,HecticAddCleave,Ultraxion,Beastlord
+```
 
 ## Future
 
