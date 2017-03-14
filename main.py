@@ -61,8 +61,8 @@ def loadConfig():
         config["Sim"]["maxthreads"] = str(max(multiprocessing.cpu_count()-2, 1))
         print("INFO: maxthreads option not set. Defaulting maxthreads to %s" % config["Sim"]["maxthreads"])
 
-    if not config.has_option("Profile", "fightstyle"):
-        config["Profile"]["fightstyle"] = "Patchwerk"
+    if not config.has_option("Sim", "fightstyle"):
+        config["Sim"]["fightstyle"] = "Patchwerk"
         print("INFO: Defaulting fightstyle to Patchwerk.")
 
     return config

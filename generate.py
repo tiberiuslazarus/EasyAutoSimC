@@ -39,17 +39,13 @@ def generateProfiles(config):
     return generatedProfiles
 
 def iterateGear(gearOptions, gearSlots, equippedGear, config):
-    gearSlots = ["head","neck","shoulders","back","chest","wrists","hands","waist","legs","feet","finger1","finger2","trinket1","trinket2","main_hand","off_hand"]
-    slot = gearSlots.pop()
+    # gearSlots = ["head","neck","shoulders","back","chest","wrists","hands","waist","legs","feet","finger1","finger2","trinket1","trinket2","main_hand","off_hand"]
     profileId=1
 
     profiles = {}
-    fightStyles = config["Profile"]["fightstyle"].split(",")
+    fightStyles = config["Sim"]["fightstyle"].split(",")
     for fightStyle in fightStyles:
         profiles[fightStyle] = {"valid": [], "invalid": 0}
-
-    equippedRings = []
-    equippedTrinkets = []
 
     for headSlotOption in gearOptions["head"]:
         equippedGear["head"] = headSlotOption
@@ -71,6 +67,8 @@ def iterateGear(gearOptions, gearSlots, equippedGear, config):
                                         equippedGear["legs"] = legsSlotOption
                                         for feetSlotOption in gearOptions["feet"]:
                                             equippedGear["feet"] = feetSlotOption
+                                            # Reset equipped rings as we are about to start a new iteration of them
+                                            equippedRings = []
                                             for finger1Option in gearOptions["finger1"]:
                                                 equippedGear["finger1"] = finger1Option
                                                 equippedRings.append(finger1Option)
@@ -78,11 +76,13 @@ def iterateGear(gearOptions, gearSlots, equippedGear, config):
                                                     if (finger2Option in equippedRings):
                                                         continue
                                                     equippedGear["finger2"] = finger2Option
+                                                    # Reset equipped trinkets as we are about to start a new iteration of them
+                                                    equippedTrinkets = []
                                                     for trinket1Option in gearOptions["trinket1"]:
                                                         equippedGear["trinket1"] = trinket1Option
                                                         equippedTrinkets.append(trinket1Option)
                                                         for trinket2Option in gearOptions["trinket2"]:
-                                                            if (finger2Option in equippedTrinkets):
+                                                            if (trinket2Option in equippedTrinkets):
                                                                 continue
                                                             equippedGear["trinket2"] = trinket2Option
                                                             for main_handSlotOption in gearOptions["main_hand"]:
@@ -93,9 +93,9 @@ def iterateGear(gearOptions, gearSlots, equippedGear, config):
                                                                         generatedProfile = generateProfile(profileId, equippedGear, config)
                                                                         if (generatedProfile != ""):
                                                                             profiles[fightStyle]["valid"].append((fightStyle, generatedProfile))
-                                                                            profileId += 1
                                                                         else:
                                                                             profiles[fightStyle]["invalid"] += 1
+                                                                    profileId += 1
     return profiles
 
 ### Function to generate a simc profile ###
@@ -128,10 +128,8 @@ def generateProfile(profileId, equippedGear, config):
 #check if permutation is valid
 def checkUsability(equippedGear):
     # print(equippedGear)
-    if len(sys.argv) == 3:
-        legmax=int(sys.argv[2])
-    else:
-        legmax=2
+    legmax=2
+
     nbLeg=0
     for slotGear in equippedGear:
         if equippedGear[slotGear][0]=="L":
