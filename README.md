@@ -1,7 +1,7 @@
 # ExtraAutoSimC
 ---
 
-System to generate gearing options from owned items for WoW characters and then feed them to SimulationCraft to provide optimal gear choices. Heavily based off of AutoSimC (https://github.com/SimCMinMax/AutoSimC)
+System to generate gearing options from owned items for WoW characters and then feed them to [SimulationCraft](http://simulationcraft.org/) to provide optimal gear choices. Heavily based off of [AutoSimC](https://github.com/SimCMinMax/AutoSimC).
 
 Created to work in Python3. Maybe 2? Idk.
 
@@ -15,11 +15,13 @@ simc-715-02-win64-13c760b
 
 ## Usage
 
-1) Run: `launch.bat` *or* from command line: `python main.py`
+1) Export your gear options you would like to compare from [SimPermut](https://mods.curse.com/addons/wow/254069-simpermut) in AutoSimC format. Copy and paste the export to a file.
 
-2) Enter name of a file containing an export of data in autosimc format from SimPermut (file name can also be passed as first argument on command line)
+2) Run: `launch.bat` *or* from command line: `python main.py`
 
-3) Html format results from SimC for the top 5 dps profiles will be saved in ./output/html/ . Open those to see what gear os equipped for that profile.
+3) Enter the name of a file containing an export of data in autosimc format from SimPermut. Optionally the file name can be passed as the first argument on command line.
+
+4) Html format results from SimC for the top 5 dps profiles will be saved in ./output/html/ . Open those to see what gear os equipped for that profile.
 
 
 ### CPU Usage
@@ -42,8 +44,9 @@ fightstyle=HelterSkelter,Patchwerk,HecticAddCleave,Ultraxion,Beastlord
 
 ## Future
 
-1) Cleaner output of gear for top profiles. Having to open separate html files kind of sucks.
-2) Clean up simc profiles after execution. Currently if you run a large number of gear combinations a new file for each will be created and stay around in `.\profiles\` until after all sims are done.
-3) Configuration options:
-  to sim multiple fight types (patchwerk, heavy movement, cleave)
-  to optimise for a different metric (DPS, DPS to Primary target in cleave fights, DTPS)
+* Cleaner output of gear for top profiles. Having to open separate html files to see the equipped gear kind of sucks and is not very Auto.
+* Clean up simc profiles after execution. Currently if you run a large number of gear combinations a new file for each will be created and stay around in `.\{profilename}\profiles\` until after all sims are done.
+* Configuration options:
+  * ~~to sim multiple fight types (patchwerk, heavy movement, cleave)~~ DONE
+  * to optimise for a different metric (DPS, DPS to Primary target in cleave fights, DTPS)
+  * Compare talent sets as well as gear

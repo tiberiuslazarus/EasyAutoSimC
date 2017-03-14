@@ -30,8 +30,8 @@ def runSims(profiles, maxthreads):
         topDps.extend(analyzeSims(batchProfiles, maxthreads))
         topDps = [dpsTuple for dpsTuple in heapq.nlargest(5,topDps,key=itemgetter(2))]
 
-        # for fightStyle, profileId in batchProfiles:
-        #     os.remove("output\\json\\%s_%s.json" % (fightStyle, profileId))
+        for fightStyle, profileId in batchProfiles:
+            os.remove("output\\json\\%s_%s.json" % (fightStyle, profileId))
 
         completedProfiles += batchSize
         print("%s of %s profiles completed." % (completedProfiles, totalProfiles))
