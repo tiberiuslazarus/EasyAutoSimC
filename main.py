@@ -50,6 +50,9 @@ def loadConfig():
         print("ERROR: Config file (%s) does not exist." % configFile)
         sys.exit(99)
 
+    if "Sim" not in config:
+        config["Sim"] = {}
+
     if config.has_option("Sim", "maxthreads"):
         try:
             int(config["Sim"]["maxthreads"])
@@ -57,7 +60,6 @@ def loadConfig():
             config["Sim"]["maxthreads"] = str(max(multiprocessing.cpu_count()-2, 1))
             print("WARN: maxthreads option not a valid number. Defaulting maxthreads to %s" % config["Sim"]["maxthreads"])
     else:
-        config["Sim"] = {}
         config["Sim"]["maxthreads"] = str(max(multiprocessing.cpu_count()-2, 1))
         print("INFO: maxthreads option not set. Defaulting maxthreads to %s" % config["Sim"]["maxthreads"])
 
