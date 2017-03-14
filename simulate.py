@@ -53,8 +53,6 @@ def runSimsMultiThread(profiles, maxthreads):
         pool.starmap(runSim, profiles)
         pool.close()
     except KeyboardInterrupt:
-        # **** THIS PART NEVER EXECUTES. ****
-        pool.terminate()
         print("---Simming cancelled by user after %s profiles---" % completedProfiles)
         sys.exit(1)
     except Exception as e:
