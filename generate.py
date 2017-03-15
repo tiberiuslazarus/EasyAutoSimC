@@ -3,7 +3,7 @@ import time
 
 def generateGear(config):
     generateStartTime = time.time()
-    print("Generating profiles from gear options...")
+    print("---Generating profiles from gear options---")
     availableGear = config["Gear"]
 
     # standardize gear names

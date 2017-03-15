@@ -8,8 +8,12 @@ import time
 
 def main():
     config = loadConfig()
-    setup(config)
+    # setup(config)
+    print("Performing gear comparisons for %s on Fight Styles: %s" % (config["Profile"]["profilename"], config["Sim"]["fightstyle"]))
+    print()
+
     generatedGear = generateGear(config)
+
     for fightStyle in generatedGear:
         print("---Simming profiles for fight style %s---" % fightStyle)
 
@@ -18,23 +22,22 @@ def main():
             simInputs.append((fightStyle, fightStyleGear, config["Profile"]))
 
         topSims = runSims(simInputs, config["Sim"]["maxthreads"])
-        print(topSims)
         htmlOutputs = generateHtmlOutput(topSims)
 
         # topSimDps = [x[1] for x in topSims]
-        print("Top %s DPS for %s results available at:" % (len(htmlOutputs), fightStyle))
+        print("---Top %s DPS for %s results available at:---" % (len(htmlOutputs), fightStyle))
         for i in range(len(htmlOutputs)):
             print("%s: %s (%s) Gear: %s" % (i+1, htmlOutputs[i]["output"], htmlOutputs[i]["dps"], htmlOutputs[i]["equippedGear"]))
         print("-------")
         print()
 
-def setup(config):
-    if not os.path.exists(config["Profile"]["profilename"]):
-        os.makedirs(config["Profile"]["profilename"])
-    # os.chdir(config["Profile"]["profilename"])
-    for dir in ["output", "output\\json", "output\\html", "profiles"]:
-        if not os.path.exists(dir):
-            os.makedirs(dir)
+# def setup(config):
+#     if not os.path.exists(config["Profile"]["profilename"]):
+#         os.makedirs(config["Profile"]["profilename"])
+#     # os.chdir(config["Profile"]["profilename"])
+#     for dir in ["output", "output\\json", "output\\html", "profiles"]:
+#         if not os.path.exists(dir):
+#             os.makedirs(dir)
 
 def loadConfig():
     config = configparser.ConfigParser()
