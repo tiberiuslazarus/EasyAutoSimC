@@ -1,51 +1,46 @@
 import sys
 import time
 
-def generateProfiles(config):
+def generateGear(config):
     generateStartTime = time.time()
     print("Generating profiles from gear options...")
-    gear = config["Gear"]
+    availableGear = config["Gear"]
 
     # standardize gear names
-    if config.has_option("Gear", "shoulder"):
-        gear["shoulders"] = gear["shoulder"]
-    if config.has_option("Gear", "wrist"):
-        gear["wrists"] = gear["wrist"]
-    if not config.has_option("Gear", "off_hand"):
-        gear["off_hand"] = ""
+    if availableGear["shoulder"]:
+        availableGear["shoulders"] = availableGear["shoulder"]
+    if availableGear["wrist"]:
+        availableGear["wrists"] = availableGear["wrist"]
+    if not availableGear["off_hand"]:
+        availableGear["off_hand"] = ""
 
     ### Split vars to lists ###
     gearOptions={}
-    for slot, slotOptions in gear.items():
+    for slot, slotOptions in availableGear.items():
         gearOptions[slot]=slotOptions.split("|")
 
-    equippedGear = {}
-    gearSlots = ["head","neck","shoulder","back","chest","wrist","hands","waist","legs","feet","finger1","finger2","trinket1","trinket2"]
-
-    generatedProfiles = iterateGear(gearOptions, gearSlots, equippedGear, config)
+    generatedGear = iterateGear(gearOptions, config)
 
     valid = 0
     invalid = 0
 
-    for fightStyle in generatedProfiles:
-        valid += len(generatedProfiles[fightStyle]["valid"])
-        invalid += generatedProfiles[fightStyle]["invalid"]
-    print("%s Gear possibilities across %s fight styles" % (valid + invalid, len(generatedProfiles)))
+    for fightStyle in generatedGear:
+        valid += len(generatedGear[fightStyle]["valid"])
+        invalid += generatedGear[fightStyle]["invalid"]
+    print("%s Gear possibilities across %s fight styles" % (valid + invalid, len(generatedGear)))
     print("Invalid gear combinations: %s" % invalid)
     print("Valid gear combinations: %s" % valid)
     print("--- Profiles generated in %s seconds ---" % (time.time() - generateStartTime))
     print()
 
-    return generatedProfiles
+    return generatedGear
 
-def iterateGear(gearOptions, gearSlots, equippedGear, config):
-    # gearSlots = ["head","neck","shoulders","back","chest","wrists","hands","waist","legs","feet","finger1","finger2","trinket1","trinket2","main_hand","off_hand"]
-    profileId=1
-
-    profiles = {}
+def iterateGear(gearOptions, config):
+    gearProfiles = {}
     fightStyles = config["Sim"]["fightstyle"].split(",")
+    equippedGear = {}
     for fightStyle in fightStyles:
-        profiles[fightStyle] = {"valid": [], "invalid": 0}
+        gearProfiles[fightStyle] = {"valid": [], "invalid": 0}
 
     for headSlotOption in gearOptions["head"]:
         equippedGear["head"] = headSlotOption
@@ -90,43 +85,46 @@ def iterateGear(gearOptions, gearSlots, equippedGear, config):
                                                                 for off_handSlotOption in gearOptions["off_hand"]:
                                                                     equippedGear["off_hand"] = off_handSlotOption
                                                                     for fightStyle in fightStyles:
-                                                                        generatedProfile = generateProfile(profileId, equippedGear, config)
-                                                                        if (generatedProfile != ""):
-                                                                            profiles[fightStyle]["valid"].append((fightStyle, generatedProfile))
+                                                                        if usable(equippedGear):
+                                                                            gearProfiles[fightStyle]["valid"].append(equippedGear)
                                                                         else:
-                                                                            profiles[fightStyle]["invalid"] += 1
-                                                                    profileId += 1
-    return profiles
+                                                                            gearProfiles[fightStyle]["invalid"] += 1
+    return gearProfiles
 
 ### Function to generate a simc profile ###
-def generateProfile(profileId, equippedGear, config):
-    result = checkUsability(equippedGear)
-    if result!="":
-        return ""
-    else:
-        configProfile = config["Profile"]
-        profileIdStr = getProfileIdStr(configProfile["profilename"], profileId)
-        profileFile=open("profiles\\%s.simc" % profileIdStr, "w")
 
-        profileFile.write("%s=%s_%s\n" % (configProfile["class"], configProfile["profilename"], profileIdStr))
-        profileFile.write("specialization=%s\n" % (configProfile["spec"]))
-        profileFile.write("race=%s\n" % (configProfile["race"]))
-        profileFile.write("level=%s\n" % (configProfile["level"]))
-        profileFile.write("role=%s\n" % (configProfile["role"]))
-        profileFile.write("position=%s\n" % (configProfile["position"]))
-        profileFile.write("talents=%s\n" % (configProfile["talents"]))
-        profileFile.write("artifact=%s\n" % (configProfile["artifact"]))
+def generateGearProfile(outputFileName, equippedGear, configProfile):
+    gearProfile = ""
+    gearProfile += "%s=%s_%s\n" % (configProfile["class"], configProfile["profilename"], outputFileName)
+    gearProfile += "specialization=%s\n" % (configProfile["spec"])
+    gearProfile += "race=%s\n" % (configProfile["race"])
+    gearProfile += "level=%s\n" % (configProfile["level"])
+    gearProfile += "role=%s\n" % (configProfile["role"])
+    gearProfile += "position=%s\n" % (configProfile["position"])
+    gearProfile += "talents=%s\n" % (configProfile["talents"])
+    gearProfile += "artifact=%s\n" % (configProfile["artifact"])
 
-        for slot, gear in equippedGear.items():
-            profileFile.write("%s=%s\n" % (slot, (gear if gear[0]!="L" else gear[1:])))
+    for slot, gear in equippedGear.items():
+        gearProfile += "%s=%s\n" % (slot, (gear if gear[0]!="L" else gear[1:]))
 
-        profileFile.close()
+    return gearProfile
 
-        return profileIdStr
 
+def generateGearProfileOld(outputFile, equippedGear, configProfile):
+    outputFile.write("%s=%s_%s\n" % (configProfile["class"], configProfile["profilename"], outputFile.name))
+    outputFile.write("specialization=%s\n" % (configProfile["spec"]))
+    outputFile.write("race=%s\n" % (configProfile["race"]))
+    outputFile.write("level=%s\n" % (configProfile["level"]))
+    outputFile.write("role=%s\n" % (configProfile["role"]))
+    outputFile.write("position=%s\n" % (configProfile["position"]))
+    outputFile.write("talents=%s\n" % (configProfile["talents"]))
+    outputFile.write("artifact=%s\n" % (configProfile["artifact"]))
+
+    for slot, gear in equippedGear.items():
+        outputFile.write("%s=%s\n" % (slot, (gear if gear[0]!="L" else gear[1:])))
 
 #check if permutation is valid
-def checkUsability(equippedGear):
+def usable(equippedGear):
     # print(equippedGear)
     legmax=2
 
@@ -134,14 +132,10 @@ def checkUsability(equippedGear):
     for slotGear in equippedGear:
         if equippedGear[slotGear][0]=="L":
             nbLeg=nbLeg+1
-    if nbLeg>legmax:
-        return "Too many legendaries (%s)" % nbLeg
-    elif equippedGear["finger1"]==equippedGear["finger2"]:
-        return "Duplicate ring equipped"
-    elif equippedGear["trinket1"]==equippedGear["trinket2"]:
-        return "Duplicate trinket equipped"
+    if nbLeg>legmax or equippedGear["finger1"]==equippedGear["finger2"] or equippedGear["trinket1"]==equippedGear["trinket2"]:
+        return False
     else:
-        return ""
+        return True
 
 def getProfileIdStr(profilename, profileId):
     return "%s_%s" % (profilename, str(profileId).zfill(6))

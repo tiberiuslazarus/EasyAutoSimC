@@ -9,28 +9,29 @@ import time
 def main():
     config = loadConfig()
     setup(config)
-    generatedProfiles = generateProfiles(config)
-    for fightStyle in generatedProfiles:
+    generatedGear = generateGear(config)
+    for fightStyle in generatedGear:
         print("---Simming profiles for fight style %s---" % fightStyle)
-        topDps = runSims(generatedProfiles[fightStyle]["valid"], config["Sim"]["maxthreads"])
 
-        topDpsProfiles = []
-        for dpsTuple in topDps:
-            topDpsProfiles.append((dpsTuple[0], dpsTuple[1]))
+        simInputs = []
+        for fightStyleGear in generatedGear[fightStyle]["valid"]:
+            simInputs.append((fightStyle, fightStyleGear, config["Profile"]))
 
-        generateHtmlProfiles(topDpsProfiles)
+        topSims = runSims(simInputs, config["Sim"]["maxthreads"])
+        print(topSims)
+        htmlOutputs = generateHtmlOutput(topSims)
 
-        topDpsProfiles = [x[1] for x in topDps]
-        print("Top %s DPS for %s results available at:" % (len(topDps), fightStyle))
-        for i in range(len(topDps)):
-            print("%s: output\\html\\%s_%s.html (%s)" % (i+1, topDps[i][0], topDps[i][1], topDps[i][2]))
+        # topSimDps = [x[1] for x in topSims]
+        print("Top %s DPS for %s results available at:" % (len(htmlOutputs), fightStyle))
+        for i in range(len(htmlOutputs)):
+            print("%s: %s (%s) Gear: %s" % (i+1, htmlOutputs[i]["output"], htmlOutputs[i]["dps"], htmlOutputs[i]["equippedGear"]))
         print("-------")
         print()
 
 def setup(config):
     if not os.path.exists(config["Profile"]["profilename"]):
         os.makedirs(config["Profile"]["profilename"])
-    os.chdir(config["Profile"]["profilename"])
+    # os.chdir(config["Profile"]["profilename"])
     for dir in ["output", "output\\json", "output\\html", "profiles"]:
         if not os.path.exists(dir):
             os.makedirs(dir)
@@ -65,7 +66,7 @@ def loadConfig():
         config["Sim"]["fightstyle"] = "Patchwerk"
         print("INFO: Defaulting fightstyle to Patchwerk.")
 
-    return config
+    return dict(config)
 
 if __name__ == "__main__":
     start_time = time.time()
