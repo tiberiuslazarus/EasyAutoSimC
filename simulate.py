@@ -10,19 +10,19 @@ import traceback
 
 simResults = []
 
-def generateHtmlOutput(simInputs):
+def generateHtmlOutput(simInputs, metric):
     outputId = 1
     htmlOutputs = []
     for simInput in simInputs:
         outputFileName = "%s/%s/%s.html" % (simInput["configProfile"]["profilename"], simInput["fightStyle"], outputId)
-        htmlDict = runSim(simInput["fightStyle"], simInput["equippedGear"], simInput["configProfile"], "html", outputFileName, delete=False)
+        htmlDict = runSim(simInput["fightStyle"], simInput["equippedGear"], simInput["configProfile"], metric, "html", outputFileName, delete=False)
         htmlDict["output"] = outputFileName
-        htmlDict["dps"] = simInput["dps"]
+        htmlDict[metric] = simInput[metric]
         htmlOutputs.append(htmlDict)
         outputId += 1
     return htmlOutputs
 
-def runSims(simInputs, maxthreads):
+def runSims(simInputs, maxthreads, metric):
     completedProfiles = 0
     totalProfiles = len(simInputs)
     topSims = []
@@ -44,7 +44,11 @@ def runSims(simInputs, maxthreads):
 
         topSims.extend(batchSims)
 
-        topSims = [simDict for simDict in heapq.nlargest(5,topSims,key=itemgetter("dps"))]
+        smallestMetrics = ["dtps", "dmg_taken", "theck_meloree_index", "effective_theck_meloree_index"]
+        if metric in smallestMetrics:
+            topSims = [simDict for simDict in heapq.nsmallest(5,topSims,key=itemgetter(metric))]
+        else:
+            topSims = [simDict for simDict in heapq.nlargest(5,topSims,key=itemgetter(metric))]
 
         completedProfiles += batchSize
         print("%s of %s profiles completed." % (completedProfiles, totalProfiles))
@@ -75,7 +79,7 @@ def runSimsMultiThread(simInputs, maxthreads):
         pool.join()
     return simDicts
 
-def runSim(fightStyle, equippedGear, configProfile, outputType="json", outputFileName=None, delete=True):
+def runSim(fightStyle, equippedGear, configProfile, metric, outputType="json", outputFileName=None, delete=True):
     gearProfileFile = tempfile.NamedTemporaryFile(mode="w", suffix=".simc", delete=False)
     gearProfileFile.write(generateGearProfile(gearProfileFile.name, equippedGear, configProfile))
     if outputFileName:
@@ -94,7 +98,7 @@ def runSim(fightStyle, equippedGear, configProfile, outputType="json", outputFil
     subprocess.check_call(["simc.exe", inputFile, output, "threads=1", "fight_style=%s" % fightStyle, "target_error=.1"], stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
     simDict = {"equippedGear": equippedGear, "fightStyle": fightStyle, "configProfile": configProfile}
     if outputType == "json":
-        simDict["dps"] = processFile(outputFile)
+        simDict[metric] = processFile(outputFile, metric)
 
     os.remove(gearProfileFile.name)
     if delete:

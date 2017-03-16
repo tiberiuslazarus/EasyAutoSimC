@@ -12,6 +12,7 @@ def main():
     print()
 
     generatedGear = generateGear(config)
+    metric = config["Sim"]["metric"]
 
     for fightStyle, fightStyleGear in generatedGear.items():
         print("---Simming profiles for fight style %s---" % fightStyle)
@@ -19,15 +20,15 @@ def main():
         simInputs = []
 
         for validGear in fightStyleGear["valid"]:
-            simInputs.append((fightStyle, validGear, config["Profile"]))
+            simInputs.append((fightStyle, validGear, config["Profile"], metric))
 
-        topSims = runSims(simInputs, config["Sim"]["maxthreads"])
-        htmlOutputs = generateHtmlOutput(topSims)
+        topSims = runSims(simInputs, config["Sim"]["maxthreads"], metric)
+        htmlOutputs = generateHtmlOutput(topSims, metric)
 
         # topSimDps = [x[1] for x in topSims]
-        print("---Top %s DPS for %s results available at:---" % (len(htmlOutputs), fightStyle))
+        print("---Best %s %s for %s results available at:---" % (len(htmlOutputs), metric, fightStyle))
         for i in range(len(htmlOutputs)):
-            print("%s: %s (%s) Gear: %s" % (i+1, htmlOutputs[i]["output"], htmlOutputs[i]["dps"], htmlOutputs[i]["equippedGear"]))
+            print("%s: %s (%s) Gear: %s" % (i+1, htmlOutputs[i]["output"], htmlOutputs[i][metric], htmlOutputs[i]["equippedGear"]))
         print("-------")
         print()
 
@@ -61,7 +62,23 @@ def loadConfig():
 
     if not config.has_option("Sim", "fightstyle"):
         config["Sim"]["fightstyle"] = "Patchwerk"
-        print("INFO: Defaulting fightstyle to Patchwerk.")
+        print("INFO: Defaulting fightstyle to %s." % config["Sim"]["fightstyle"])
+
+    if not config.has_option("Sim", "metric"):
+        config["Sim"]["metric"] = "dps"
+        print("INFO: Defaulting to optimizing %s." % config["Sim"]["metric"])
+
+    # extend the acronym because simc is stupid
+    if config["Sim"]["metric"] == "tmi":
+        config["Sim"]["metric"] = "theck_meloree_index"
+
+    if config["Sim"]["metric"] == "etmi":
+        config["Sim"]["metric"] = "effective_theck_meloree_index"
+
+    validMetrics = ["dps", "prioritydps", "dpse", "hps", "dtps", "dmg_taken", "theck_meloree_index", "tmi", "effective_theck_meloree_index", "etmi"]
+    if config["Sim"]["metric"] not in validMetrics:
+        print("Unknown metric value (%s) in config file. Valid Metrics are one of: %s" % (config["Sim"]["metric"], validMetrics))
+        sys.exit(98)
 
     return dict(config)
 
