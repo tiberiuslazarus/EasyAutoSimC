@@ -16,7 +16,7 @@ def generateHtmlOutput(simInputs):
     for simInput in simInputs:
         outputFileName = "%s/%s/%s.html" % (simInput["configProfile"]["profilename"], simInput["fightStyle"], outputId)
         htmlDict = runSim(simInput["fightStyle"], simInput["equippedGear"], simInput["configProfile"], "html", outputFileName, delete=False)
-        htmlDict["output"] = "outputFileName"
+        htmlDict["output"] = outputFileName
         htmlDict["dps"] = simInput["dps"]
         htmlOutputs.append(htmlDict)
         outputId += 1
@@ -28,26 +28,30 @@ def runSims(simInputs, maxthreads):
     topSims = []
     lastTime = time.time()
     # maxthreads = config["Sim"]["maxthreads"]
+    maxthreads = int(maxthreads)
 
     while (len(simInputs) > 0):
         batchSize=min(100, len(simInputs))
         batchInputs = simInputs[:batchSize]
         del simInputs[:batchSize]
 
+        print("Simming batch of %s gear options" % batchSize)
+
         if (int(maxthreads) > 1):
-            topSims.extend(runSimsMultiThread(batchInputs, maxthreads))
+            batchSims = runSimsMultiThread(batchInputs, maxthreads)
         else:
-            topSims.extend(runSimsSingleThread(batchInputs, "json"))
+            batchSims = runSimsSingleThread(batchInputs, "json")
 
+        topSims.extend(batchSims)
 
-        topDps = [simDict for simDict in heapq.nlargest(5,topSims,key=itemgetter("dps"))]
+        topSims = [simDict for simDict in heapq.nlargest(5,topSims,key=itemgetter("dps"))]
 
         completedProfiles += batchSize
         print("%s of %s profiles completed." % (completedProfiles, totalProfiles))
         print("Last %s profiles simmed in %s seconds" % (batchSize, time.time() - lastTime))
         print()
         lastTime = time.time()
-    return topDps
+    return topSims
 
 def runSimsMultiThread(simInputs, maxthreads):
     simStartTime = time.time()
@@ -87,7 +91,7 @@ def runSim(fightStyle, equippedGear, configProfile, outputType="json", outputFil
     gearProfileFile.close()
     outputFile.close()
 
-    subprocess.check_call(["simc.exe", inputFile, output, "threads=1", "fight_style=%s" % fightStyle], stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
+    subprocess.check_call(["simc.exe", inputFile, output, "threads=1", "fight_style=%s" % fightStyle, "target_error=.1"], stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
     simDict = {"equippedGear": equippedGear, "fightStyle": fightStyle, "configProfile": configProfile}
     if outputType == "json":
         simDict["dps"] = processFile(outputFile)

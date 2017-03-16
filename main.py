@@ -8,18 +8,18 @@ import time
 
 def main():
     config = loadConfig()
-    # setup(config)
     print("Performing gear comparisons for %s on Fight Styles: %s" % (config["Profile"]["profilename"], config["Sim"]["fightstyle"]))
     print()
 
     generatedGear = generateGear(config)
 
-    for fightStyle in generatedGear:
+    for fightStyle, fightStyleGear in generatedGear.items():
         print("---Simming profiles for fight style %s---" % fightStyle)
 
         simInputs = []
-        for fightStyleGear in generatedGear[fightStyle]["valid"]:
-            simInputs.append((fightStyle, fightStyleGear, config["Profile"]))
+
+        for validGear in fightStyleGear["valid"]:
+            simInputs.append((fightStyle, validGear, config["Profile"]))
 
         topSims = runSims(simInputs, config["Sim"]["maxthreads"])
         htmlOutputs = generateHtmlOutput(topSims)
@@ -30,14 +30,6 @@ def main():
             print("%s: %s (%s) Gear: %s" % (i+1, htmlOutputs[i]["output"], htmlOutputs[i]["dps"], htmlOutputs[i]["equippedGear"]))
         print("-------")
         print()
-
-# def setup(config):
-#     if not os.path.exists(config["Profile"]["profilename"]):
-#         os.makedirs(config["Profile"]["profilename"])
-#     # os.chdir(config["Profile"]["profilename"])
-#     for dir in ["output", "output\\json", "output\\html", "profiles"]:
-#         if not os.path.exists(dir):
-#             os.makedirs(dir)
 
 def loadConfig():
     config = configparser.ConfigParser()

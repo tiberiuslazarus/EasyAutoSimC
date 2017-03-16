@@ -63,32 +63,29 @@ def iterateGear(gearOptions, config):
                                         for feetSlotOption in gearOptions["feet"]:
                                             equippedGear["feet"] = feetSlotOption
                                             # Reset equipped rings as we are about to start a new iteration of them
-                                            equippedRings = []
+                                            prevRings = []
                                             for finger1Option in gearOptions["finger1"]:
                                                 equippedGear["finger1"] = finger1Option
-                                                equippedRings.append(finger1Option)
-                                                for finger2Option in gearOptions["finger2"]:
-                                                    if (finger2Option in equippedRings):
-                                                        continue
+                                                prevRings.append(finger1Option)
+                                                for finger2Option in [x for x in gearOptions["finger2"] if x not in prevRings]:
                                                     equippedGear["finger2"] = finger2Option
                                                     # Reset equipped trinkets as we are about to start a new iteration of them
-                                                    equippedTrinkets = []
+                                                    prevTrinkets = []
                                                     for trinket1Option in gearOptions["trinket1"]:
                                                         equippedGear["trinket1"] = trinket1Option
-                                                        equippedTrinkets.append(trinket1Option)
-                                                        for trinket2Option in gearOptions["trinket2"]:
-                                                            if (trinket2Option in equippedTrinkets):
-                                                                continue
+                                                        prevTrinkets.append(trinket1Option)
+                                                        for trinket2Option in [x for x in gearOptions["trinket2"] if x not in prevTrinkets]:
                                                             equippedGear["trinket2"] = trinket2Option
                                                             for main_handSlotOption in gearOptions["main_hand"]:
                                                                 equippedGear["main_hand"] = main_handSlotOption
                                                                 for off_handSlotOption in gearOptions["off_hand"]:
                                                                     equippedGear["off_hand"] = off_handSlotOption
-                                                                    for fightStyle in fightStyles:
-                                                                        if usable(equippedGear):
-                                                                            gearProfiles[fightStyle]["valid"].append(equippedGear)
+                                                                    if usable(equippedGear):
+                                                                        for fightStyle in fightStyles:
+                                                                            gearProfiles[fightStyle]["valid"].append(equippedGear.copy())
                                                                         else:
                                                                             gearProfiles[fightStyle]["invalid"] += 1
+
     return gearProfiles
 
 ### Function to generate a simc profile ###
@@ -127,12 +124,19 @@ def generateGearProfileOld(outputFile, equippedGear, configProfile):
 def usable(equippedGear):
     # print(equippedGear)
     legmax=2
-
     nbLeg=0
+
     for slotGear in equippedGear:
         if equippedGear[slotGear][0]=="L":
             nbLeg=nbLeg+1
-    if nbLeg>legmax or equippedGear["finger1"]==equippedGear["finger2"] or equippedGear["trinket1"]==equippedGear["trinket2"]:
+    if nbLeg>legmax:
+        # print("Unusable gear: Too many legendaries")
+        return False
+    elif equippedGear["finger1"]==equippedGear["finger2"]:
+        print("Unusable gear: Rings are the same")
+        return False
+    elif equippedGear["trinket1"]==equippedGear["trinket2"]:
+        print("Unusable gear: Trinkets are the same")
         return False
     else:
         return True
