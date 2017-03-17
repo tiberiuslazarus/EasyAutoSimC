@@ -1,6 +1,7 @@
 from analyze import *
 from simulate import *
 from generate import *
+from sizeof import *
 
 import configparser
 import sys
@@ -11,24 +12,25 @@ def main():
     print("Performing gear comparisons for %s on Fight Styles: %s" % (config["Profile"]["profilename"], config["Sim"]["fightstyle"]))
     print()
 
-    generatedGear = generateGear(config)
+    generatedGear = generateGear(config["Gear"])
+
     metric = config["Sim"]["metric"]
+    htmlOutputs = {}
 
-    for fightStyle, fightStyleGear in generatedGear.items():
+    for fightStyle in config["Sim"]["fightstyle"].split(","):
         print("---Simming profiles for fight style %s---" % fightStyle)
-
         simInputs = []
 
-        for validGear in fightStyleGear["valid"]:
+        for validGear in generatedGear["valid"]:
             simInputs.append((fightStyle, validGear, config["Profile"], metric))
 
         topSims = runSims(simInputs, config["Sim"]["maxthreads"], metric)
-        htmlOutputs = generateHtmlOutput(topSims, metric)
+        htmlOutputs[fightStyle] = generateHtmlOutput(topSims, metric)
 
-        # topSimDps = [x[1] for x in topSims]
-        print("---Best %s %s for %s results available at:---" % (len(htmlOutputs), metric, fightStyle))
-        for i in range(len(htmlOutputs)):
-            print("%s: %s (%s) Gear: %s" % (i+1, htmlOutputs[i]["output"], htmlOutputs[i][metric], htmlOutputs[i]["equippedGear"]))
+    for fightStyle, fightHtmlOutputs in htmlOutputs.items():
+        print("---Best %s %s for %s results available at:---" % (len(fightHtmlOutputs), metric, fightStyle))
+        for i in range(len(fightHtmlOutputs)):
+            print("%s: %s (%s)" % (i+1, fightHtmlOutputs[i]["output"], fightHtmlOutputs[i][metric]))
         print("-------")
         print()
 

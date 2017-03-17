@@ -95,7 +95,7 @@ def runSim(fightStyle, equippedGear, configProfile, metric, outputType="json", o
     gearProfileFile.close()
     outputFile.close()
 
-    subprocess.check_call(["simc.exe", inputFile, output, "threads=1", "fight_style=%s" % fightStyle, "target_error=.2"], stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
+    subprocess.check_call(["simc.exe", inputFile, output, "threads=1", "fight_style=%s" % fightStyle, "target_error=.5"], stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
     simDict = {"equippedGear": equippedGear, "fightStyle": fightStyle, "configProfile": configProfile}
     if outputType == "json":
         simDict[metric] = processFile(outputFile, metric)
