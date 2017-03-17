@@ -1,10 +1,9 @@
 import sys
 import time
 
-def generateGear(config):
+def generateGear(availableGear):
     generateStartTime = time.time()
     print("---Generating profiles from gear options---")
-    availableGear = config["Gear"]
 
     # standardize gear names
     if availableGear["shoulder"]:
@@ -19,14 +18,11 @@ def generateGear(config):
     for slot, slotOptions in availableGear.items():
         gearOptions[slot]=slotOptions.split("|")
 
-    generatedGear = iterateGear(gearOptions, config)
+    generatedGear = iterateGear(gearOptions)
 
-    valid = 0
-    invalid = 0
+    valid = len(generatedGear["valid"])
+    invalid = generatedGear["invalid"]
 
-    for fightStyle in generatedGear:
-        valid += len(generatedGear[fightStyle]["valid"])
-        invalid += generatedGear[fightStyle]["invalid"]
     print("%s Gear possibilities across %s fight styles" % (valid + invalid, len(generatedGear)))
     print("Invalid gear combinations: %s" % invalid)
     print("Valid gear combinations: %s" % valid)
@@ -35,12 +31,9 @@ def generateGear(config):
 
     return generatedGear
 
-def iterateGear(gearOptions, config):
-    gearProfiles = {}
-    fightStyles = config["Sim"]["fightstyle"].split(",")
+def iterateGear(gearOptions):
     equippedGear = {}
-    for fightStyle in fightStyles:
-        gearProfiles[fightStyle] = {"valid": [], "invalid": 0}
+    gearProfiles = {"valid": [], "invalid": 0}
 
     for headSlotOption in gearOptions["head"]:
         equippedGear["head"] = headSlotOption
@@ -81,10 +74,9 @@ def iterateGear(gearOptions, config):
                                                                 for off_handSlotOption in gearOptions["off_hand"]:
                                                                     equippedGear["off_hand"] = off_handSlotOption
                                                                     if usable(equippedGear):
-                                                                        for fightStyle in fightStyles:
-                                                                            gearProfiles[fightStyle]["valid"].append(equippedGear.copy())
-                                                                        else:
-                                                                            gearProfiles[fightStyle]["invalid"] += 1
+                                                                        gearProfiles["valid"].append(equippedGear.copy())
+                                                                    else:
+                                                                        gearProfiles["invalid"] += 1
 
     return gearProfiles
 
