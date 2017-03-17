@@ -1,7 +1,6 @@
-from analyze import *
-from simulate import *
 from generate import *
-from sizeof import *
+from simulate import *
+from analyze import *
 
 import configparser
 import sys
