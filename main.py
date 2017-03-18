@@ -9,6 +9,7 @@ import time
 def main():
     config = loadConfig()
     print("Performing gear comparisons for %s on Fight Styles: %s" % (config["Profile"]["profilename"], config["Sim"]["fightstyle"]))
+    print("Using %s threads" % config["Sim"]["maxthreads"])
     print()
 
     generatedGear = generateGear(config["Gear"])
@@ -20,10 +21,7 @@ def main():
         print("---Simming profiles for fight style %s---" % fightStyle)
         simInputs = []
 
-        for validGear in generatedGear["valid"]:
-            simInputs.append((fightStyle, validGear, config["Profile"], metric))
-
-        topSims = runSims(simInputs, config["Sim"]["maxthreads"], metric)
+        topSims = runSims(fightStyle, generatedGear["valid"], config["Profile"], config["Sim"]["maxthreads"], metric)
         htmlOutputs[fightStyle] = generateHtmlOutput(topSims, metric)
 
     for fightStyle, fightHtmlOutputs in htmlOutputs.items():
