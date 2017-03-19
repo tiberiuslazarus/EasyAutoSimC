@@ -8,7 +8,7 @@ from multiprocessing import Pool
 def processFile(outputFile, metric):
     with open(outputFile.name, "r") as jsonFile:
         simInfo = json.load(jsonFile)
-        return float(simInfo["sim"]["players"][0]["collected_data"][metric]["mean"])
+        return (float(simInfo["sim"]["players"][0]["collected_data"][metric]["mean"]), float(simInfo["sim"]["players"][0]["collected_data"][metric]["mean_std_dev"]))
 
 def analyzeSims(profiles, maxthreads):
     analysisStartTime = time.time()

@@ -8,7 +8,6 @@ from generate import generateGearProfile
 import tempfile
 import traceback
 
-simResults = []
 
 def generateHtmlOutput(simInputs, metric):
     outputId = 1
@@ -18,7 +17,7 @@ def generateHtmlOutput(simInputs, metric):
 
     for simInput in simInputs:
         outputFileName = "results/%s/%s/%s.html" % (simInput["configProfile"]["profilename"], simInput["fightStyle"], outputId)
-        htmlDict = runSim(simInput["fightStyle"], simInput["equippedGear"], simInput["configProfile"], metric, .1, "html", outputFileName, delete=False)
+        htmlDict = runSim(simInput["fightStyle"], simInput["equippedGear"], simInput["configProfile"], metric, 2000, "html", outputFileName, delete=False)
         htmlDict["output"] = outputFileName
         htmlDict[metric] = simInput[metric]
         htmlOutputs.append(htmlDict)
@@ -29,8 +28,70 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
     totalProfiles = len(gear)
     topSims = []
     lastTime = time.time()
+    maxthreads = int(maxthreads)
+    smallestMetrics = ["dtps", "dmg_taken", "theck_meloree_index", "effective_theck_meloree_index"]
+    minResultSize = 5
+
+    iterationSequence = [100,200,500,1000,2000]
+
+    simInputs = []
+    for gearSet in gear:
+        simInputs.append([fightStyle, gearSet, profile, metric])
+
+    for iterations in iterationSequence:
+        for simInput in simInputs:
+            simInput.append(iterations)
+
+        print("Total size of run at %s iterations: %s" % (iterations, len(simInputs)))
+
+        if maxthreads > 1:
+            simResults = runSimsMultiThread(simInputs, maxthreads)
+        else:
+            simResults = runSimsSingleThread(simInputs, "json")
+
+        simResultMetrics = [(simResult[metric], simResult["error"]) for simResult in simResults]
+
+        if metric in smallestMetrics:
+            bestMetricTuple = min(simResultMetrics, key = lambda t: t[0]+t[1])
+            bestMetric=bestMetricTuple[0]+bestMetricTuple[1]
+            for simResult in simResults:
+                # print("SimResult[%s] with error: %s -- Best: %s" % (metric, simResult[metric] - simResult["error"], bestMetric))
+                simResults = [x for x in simResults if (x[metric] - x["error"]) < bestMetric]
+                # if (simResult[metric] - simResult["error"]) > bestMetric:
+                #     simResults.remove(simResult)
+        else:
+            bestMetricTuple = max(simResultMetrics, key = lambda t: t[0]-t[1])
+            bestMetric=bestMetricTuple[0]-bestMetricTuple[1]
+            for simResult in simResults:
+                # print("SimResult[%s] with error: %s -- Best: %s" % (metric, simResult[metric] + simResult["error"], bestMetric))
+                simResults = [x for x in simResults if (x[metric] + x["error"]) > bestMetric]
+                # if (simResult[metric] + simResult["error"]) < bestMetric:
+                #     simResults.remove(simResult)
+
+        if len(simResults) < minResultSize:
+            if metric in smallestMetrics:
+                simResults = [simDict for simDict in heapq.nsmallest(minResultSize, simResults, key=itemgetter(metric))]
+            else:
+                simResults = [simDict for simDict in heapq.nlargest(minResultSize, simResults, key=itemgetter(metric))]
+
+        simInputs = []
+        for simResult in simResults:
+            simInputs.append([fightStyle, simResult["equippedGear"], profile, metric])
+
+    if metric in smallestMetrics:
+        simResults = [simDict for simDict in heapq.nsmallest(minResultSize, simResults, key=itemgetter(metric))]
+    else:
+        simResults = [simDict for simDict in heapq.nlargest(minResultSize, simResults, key=itemgetter(metric))]
+    return simResults
+
+
+def oldRunSims(fightStyle, gear, profile, maxthreads, metric):
+    totalProfiles = len(gear)
+    topSims = []
+    lastTime = time.time()
     # maxthreads = config["Sim"]["maxthreads"]
     maxthreads = int(maxthreads)
+    smallestMetrics = ["dtps", "dmg_taken", "theck_meloree_index", "effective_theck_meloree_index"]
 
     targetErrors = [100, 200, 500, 1000, 2000]
     targetErrorSims = []
@@ -64,7 +125,6 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
             else:
                 batchSims = runSimsSingleThread(batchInputs, "json")
 
-            smallestMetrics = ["dtps", "dmg_taken", "theck_meloree_index", "effective_theck_meloree_index"]
             metrics = [batchSim[metric] for batchSim in batchSims]
             if metric in smallestMetrics:
                 bestMetric = min(metrics)
@@ -125,7 +185,7 @@ def runSimsMultiThread(simInputs, maxthreads):
         pool.join()
     return simDicts
 
-def runSim(fightStyle, equippedGear, configProfile, targetError=1000, metric="dps", outputType="json", outputFileName=None, delete=True):
+def runSim(fightStyle, equippedGear, configProfile, metric="dps", iterations=1000, outputType="json", outputFileName=None, delete=True):
     gearProfileFile = tempfile.NamedTemporaryFile(mode="w", suffix=".simc", delete=False)
     gearProfileFile.write(generateGearProfile(gearProfileFile.name, equippedGear, configProfile))
     if outputFileName:
@@ -141,10 +201,13 @@ def runSim(fightStyle, equippedGear, configProfile, targetError=1000, metric="dp
     gearProfileFile.close()
     outputFile.close()
 
-    subprocess.check_call(["simcraft/simc.exe", inputFile, output, "threads=1", "fight_style=%s" % fightStyle, "iterations=%s" % targetError], stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
+    subprocess.check_call(["simcraft/simc.exe", inputFile, output, "threads=1", "fight_style=%s" % fightStyle, "iterations=%s" % iterations], stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
     simDict = {"equippedGear": equippedGear, "fightStyle": fightStyle, "configProfile": configProfile}
+
     if outputType == "json":
-        simDict[metric] = processFile(outputFile, metric)
+        analysisResult = processFile(outputFile, metric)
+        simDict[metric] = analysisResult[0]
+        simDict["error"] = analysisResult[1]*1.96
 
     os.remove(gearProfileFile.name)
     if delete:
