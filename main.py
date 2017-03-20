@@ -9,6 +9,7 @@ import time
 def main():
     config = loadConfig()
     print("Performing gear comparisons for %s on Fight Styles: %s" % (config["Profile"]["profilename"], config["Sim"]["fightstyle"]))
+    print("Using %s threads" % config["Sim"]["maxthreads"])
     print()
 
     generatedGear = generateGear(config["Gear"])
@@ -20,10 +21,7 @@ def main():
         print("---Simming profiles for fight style %s---" % fightStyle)
         simInputs = []
 
-        for validGear in generatedGear["valid"]:
-            simInputs.append((fightStyle, validGear, config["Profile"], metric))
-
-        topSims = runSims(simInputs, config["Sim"]["maxthreads"], metric)
+        topSims = runSims(fightStyle, generatedGear["valid"], config["Profile"], config["Sim"]["maxthreads"], metric)
         htmlOutputs[fightStyle] = generateHtmlOutput(topSims, metric)
 
     for fightStyle, fightHtmlOutputs in htmlOutputs.items():
@@ -56,10 +54,10 @@ def loadConfig():
             int(config["Sim"]["maxthreads"])
         except Exception:
             config["Sim"]["maxthreads"] = str(max(multiprocessing.cpu_count()-2, 1))
-            print("WARN: maxthreads option not a valid number. Defaulting maxthreads to %s" % config["Sim"]["maxthreads"])
+            print("WARN: Maxthreads option not a valid number. Defaulting maxthreads to %s" % config["Sim"]["maxthreads"])
     else:
         config["Sim"]["maxthreads"] = str(max(multiprocessing.cpu_count()-2, 1))
-        print("INFO: maxthreads option not set. Defaulting maxthreads to %s" % config["Sim"]["maxthreads"])
+        print("INFO: Defaulting maxthreads to %s" % config["Sim"]["maxthreads"])
 
     if not config.has_option("Sim", "fightstyle"):
         config["Sim"]["fightstyle"] = "Patchwerk"
@@ -80,6 +78,8 @@ def loadConfig():
     if config["Sim"]["metric"] not in validMetrics:
         print("Unknown metric value (%s) in config file. Valid Metrics are one of: %s" % (config["Sim"]["metric"], validMetrics))
         sys.exit(98)
+
+    print()
 
     return dict(config)
 

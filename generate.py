@@ -23,7 +23,7 @@ def generateGear(availableGear):
     valid = len(generatedGear["valid"])
     invalid = generatedGear["invalid"]
 
-    print("%s Gear possibilities across %s fight styles" % (valid + invalid, len(generatedGear)))
+    print("%s Gear possibilities" % (valid + invalid))
     print("Invalid gear combinations: %s" % invalid)
     print("Valid gear combinations: %s" % valid)
     print("--- Profiles generated in %s seconds ---" % (time.time() - generateStartTime))
