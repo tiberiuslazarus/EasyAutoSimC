@@ -7,7 +7,7 @@ from analyze import *
 from generate import generateGearProfile
 import tempfile
 import traceback
-
+import math
 
 def generateHtmlOutput(simInputs, metric):
     outputId = 1
@@ -27,10 +27,11 @@ def generateHtmlOutput(simInputs, metric):
 def runSims(fightStyle, gear, profile, maxthreads, metric):
     totalProfiles = len(gear)
     topSims = []
-    lastTime = time.time()
     maxthreads = int(maxthreads)
     smallestMetrics = ["dtps", "dmg_taken", "theck_meloree_index", "effective_theck_meloree_index"]
     minResultSize = 5
+    totalSimTime = 0
+    completedSims = 0
 
     iterationSequence = [100,200,500,1000,2000]
 
@@ -39,15 +40,29 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
         simInputs.append([fightStyle, gearSet, profile, metric])
 
     for iterations in iterationSequence:
+        # if len(simInputs) <= minResultSize:
+        #     if iterations != max(iterationSequence):
+        #         continue
         for simInput in simInputs:
             simInput.append(iterations)
 
         print("Total size of run at %s iterations: %s" % (iterations, len(simInputs)))
 
-        if maxthreads > 1:
-            simResults = runSimsMultiThread(simInputs, maxthreads)
-        else:
-            simResults = runSimsSingleThread(simInputs, "json")
+        simResults = []
+        while (len(simInputs) > 0):
+            batchStartTime = time.time()
+            batchSize=min(100, len(simInputs))
+            batchInputs = simInputs[:batchSize]
+            del simInputs[:batchSize]
+            if maxthreads > 1:
+                simResults.extend(runSimsMultiThread(batchInputs, maxthreads))
+            else:
+                simResults.extend(runSimsSingleThread(batchInputs, "json"))
+            completedSims += batchSize
+            totalSimTime += (time.time() - batchStartTime)
+            print("Completed last batch of %s in %s seconds" % (len(batchInputs), (time.time() - batchStartTime)))
+            if len(simInputs) > 0:
+                print("Estimated time remaining: %s minutes" % (math.ceil((totalSimTime/completedSims)*len(simInputs)/60)))
 
         simResultMetrics = [(simResult[metric], simResult["error"]) for simResult in simResults]
 
@@ -55,113 +70,32 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
             bestMetricTuple = min(simResultMetrics, key = lambda t: t[0]+t[1])
             bestMetric=bestMetricTuple[0]+bestMetricTuple[1]
             for simResult in simResults:
-                # print("SimResult[%s] with error: %s -- Best: %s" % (metric, simResult[metric] - simResult["error"], bestMetric))
-                simResults = [x for x in simResults if (x[metric] - x["error"]) < bestMetric]
-                # if (simResult[metric] - simResult["error"]) > bestMetric:
-                #     simResults.remove(simResult)
+                tempBestResults = [x for x in simResults if (x[metric] - x["error"]) < bestMetric]
         else:
             bestMetricTuple = max(simResultMetrics, key = lambda t: t[0]-t[1])
             bestMetric=bestMetricTuple[0]-bestMetricTuple[1]
             for simResult in simResults:
-                # print("SimResult[%s] with error: %s -- Best: %s" % (metric, simResult[metric] + simResult["error"], bestMetric))
-                simResults = [x for x in simResults if (x[metric] + x["error"]) > bestMetric]
-                # if (simResult[metric] + simResult["error"]) < bestMetric:
-                #     simResults.remove(simResult)
+                tempBestResults = [x for x in simResults if (x[metric] + x["error"]) > bestMetric]
 
-        if len(simResults) < minResultSize:
+        if len(tempBestResults) < minResultSize:
             if metric in smallestMetrics:
                 simResults = [simDict for simDict in heapq.nsmallest(minResultSize, simResults, key=itemgetter(metric))]
             else:
                 simResults = [simDict for simDict in heapq.nlargest(minResultSize, simResults, key=itemgetter(metric))]
+        else:
+            simResults = tempBestResults
 
         simInputs = []
         for simResult in simResults:
             simInputs.append([fightStyle, simResult["equippedGear"], profile, metric])
+
+        print()
 
     if metric in smallestMetrics:
         simResults = [simDict for simDict in heapq.nsmallest(minResultSize, simResults, key=itemgetter(metric))]
     else:
         simResults = [simDict for simDict in heapq.nlargest(minResultSize, simResults, key=itemgetter(metric))]
     return simResults
-
-
-def oldRunSims(fightStyle, gear, profile, maxthreads, metric):
-    totalProfiles = len(gear)
-    topSims = []
-    lastTime = time.time()
-    # maxthreads = config["Sim"]["maxthreads"]
-    maxthreads = int(maxthreads)
-    smallestMetrics = ["dtps", "dmg_taken", "theck_meloree_index", "effective_theck_meloree_index"]
-
-    targetErrors = [100, 200, 500, 1000, 2000]
-    targetErrorSims = []
-    for errorIndex, targetError in enumerate(targetErrors):
-        targetInputs = []
-        # if there are 5 or less gear sets left to sim we can jump ahead to the last sim
-        if (targetErrorSims != [] and len(targetErrorSims) <= 5) or len(gear) <= 5:
-            if errorIndex != (len(targetErrors) - 1):
-                continue
-        if targetErrorSims != []:
-            for gear in [targetErrorSim["equippedGear"] for targetErrorSim in targetErrorSims]:
-                targetInputs.append((fightStyle, gearSet, profile, targetError, metric))
-            targetErrorSims = []
-        else:
-            for gearSet in gear:
-                targetInputs.append((fightStyle, gearSet, profile, targetError, metric))
-        completedProfiles = 0
-
-        print("Total size of run at %s%% error: %s" % (targetError, len(targetInputs)))
-
-        while (len(targetInputs) > 0):
-            topSims = []
-            batchSize=min(100, len(targetInputs))
-            batchInputs = targetInputs[:batchSize]
-            del targetInputs[:batchSize]
-
-            # print("Simming batch of %s gear options at %s%% target_error" % (batchSize, targetError))
-
-            if (int(maxthreads) > 1):
-                batchSims = runSimsMultiThread(batchInputs, maxthreads)
-            else:
-                batchSims = runSimsSingleThread(batchInputs, "json")
-
-            metrics = [batchSim[metric] for batchSim in batchSims]
-            if metric in smallestMetrics:
-                bestMetric = min(metrics)
-            else:
-                bestMetric = max(metrics)
-
-            # print("Size of batch sims: %s" % len(batchSims))
-            # print("%s" % bestMetric)
-
-            errorDifference = (1000/float(targetError))/100
-
-            if metric in smallestMetrics:
-                # print("Target error margin: %s" % (bestMetric*(1+errorDifference)))
-                metricCutoff = bestMetric*(1+errorDifference)
-                targetErrorSims.extend([sim for sim in batchSims if sim[metric] < metricCutoff])
-            else:
-                # print("Target error margin: %s" % (bestMetric*(1-errorDifference)))
-                metricCutoff = bestMetric*(1-errorDifference)
-                targetErrorSims.extend([sim for sim in batchSims if sim[metric] > metricCutoff])
-
-            if len(targetErrorSims) < 5:
-               if metric in smallestMetrics:
-                   targetErrorSims = [simDict for simDict in heapq.nsmallest(5,batchSims,key=itemgetter(metric))]
-               else:
-                   targetErrorSims = [simDict for simDict in heapq.nlargest(5,batchSims,key=itemgetter(metric))]
-
-            completedProfiles += batchSize
-            # print("%s of %s profiles completed." % (completedProfiles, totalProfiles))
-            # print("Last %s profiles simmed in %s seconds" % (batchSize, time.time() - lastTime))
-            # print()
-            lastTime = time.time()
-
-    if metric in smallestMetrics:
-        topSims = [simDict for simDict in heapq.nsmallest(5,targetErrorSims,key=itemgetter(metric))]
-    else:
-        topSims = [simDict for simDict in heapq.nlargest(5,targetErrorSims,key=itemgetter(metric))]
-    return topSims
 
 def runSimsMultiThread(simInputs, maxthreads):
     simStartTime = time.time()
