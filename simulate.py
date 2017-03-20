@@ -17,7 +17,7 @@ def generateHtmlOutput(simInputs, metric):
 
     for simInput in simInputs:
         outputFileName = "results/%s/%s/%s.html" % (simInput["configProfile"]["profilename"], simInput["fightStyle"], outputId)
-        htmlDict = runSim(simInput["fightStyle"], simInput["equippedGear"], simInput["configProfile"], metric, 2000, "html", outputFileName, delete=False)
+        htmlDict = runSim(simInput["fightStyle"], simInput["equippedGear"], simInput["configProfile"], metric, 15000, "html", outputFileName, delete=False)
         htmlDict["output"] = outputFileName
         htmlDict[metric] = simInput[metric]
         htmlOutputs.append(htmlDict)
@@ -33,16 +33,16 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
     totalSimTime = 0
     completedSims = 0
 
-    iterationSequence = [100,200,500,1000,2000]
+    iterationSequence = [100,200,500,5000,15000]
 
     simInputs = []
     for gearSet in gear:
         simInputs.append([fightStyle, gearSet, profile, metric])
 
     for iterations in iterationSequence:
-        # if len(simInputs) <= minResultSize:
-        #     if iterations != max(iterationSequence):
-        #         continue
+        if len(simInputs) <= minResultSize:
+            if iterations != max(iterationSequence):
+                continue
         for simInput in simInputs:
             simInput.append(iterations)
 
