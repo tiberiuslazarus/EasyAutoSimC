@@ -26,7 +26,7 @@ def generateGear(availableGear):
     print("%s Gear possibilities" % (valid + invalid))
     print("Invalid gear combinations: %s" % invalid)
     print("Valid gear combinations: %s" % valid)
-    print("--- Profiles generated in %s ---" % (format(time.time() - generateStartTime, ".1f")))
+    print("--- Profiles generated in %s seconds ---" % (format(time.time() - generateStartTime, "0.1f")))
     print()
 
     return generatedGear
