@@ -60,9 +60,9 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
                 simResults.extend(runSimsSingleThread(batchInputs, "json"))
             completedSims += batchSize
             totalSimTime += (time.time() - batchStartTime)
-            print("Completed last batch of %s in %s seconds" % (len(batchInputs), (time.time() - batchStartTime)))
+            print("Completed last batch of %s in %s seconds" % (len(batchInputs), format((time.time() - batchStartTime), ".1f")))
             if len(simInputs) > 0:
-                print("Estimated time remaining: %s minutes" % (math.ceil((totalSimTime/completedSims)*len(simInputs)/60)))
+                print("Estimated time remaining: %s minutes" % (format((totalSimTime/completedSims)*len(simInputs)/60, ".1f")))
 
         simResultMetrics = [(simResult[metric], simResult["error"]) for simResult in simResults]
 

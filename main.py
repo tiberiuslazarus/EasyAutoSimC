@@ -86,4 +86,4 @@ def loadConfig():
 if __name__ == "__main__":
     start_time = time.time()
     main()
-    print("--- Full execution in %s seconds ---" % (time.time() - start_time))
+    print("--- Full execution in %s seconds ---" % format((time.time() - start_time)/60, ".1f"))
