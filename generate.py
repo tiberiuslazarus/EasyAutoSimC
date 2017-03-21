@@ -26,7 +26,7 @@ def generateGear(availableGear):
     print("%s Gear possibilities" % (valid + invalid))
     print("Invalid gear combinations: %s" % invalid)
     print("Valid gear combinations: %s" % valid)
-    print("--- Profiles generated in %s ---" % (format(time.time() - generateStartTime), ".1f"))
+    print("--- Profiles generated in %s ---" % (format(time.time() - generateStartTime, ".1f")))
     print()
 
     return generatedGear
@@ -122,7 +122,7 @@ def usable(equippedGear):
     for slotGear in equippedGear:
         if equippedGear[slotGear] != "" and equippedGear[slotGear][0]=="L":
             nbLeg=nbLeg+1
-    if nbLeg>legmax:
+    if nbLeg > legmax:
         return False
     elif equippedGear["finger1"]==equippedGear["finger2"]:
         return False
