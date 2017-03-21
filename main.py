@@ -16,18 +16,18 @@ def main():
 
     metric = config["Sim"]["metric"]
     htmlOutputs = {}
+    topSims = {}
 
     for fightStyle in config["Sim"]["fightstyle"].split(","):
         print("---Simming profiles for fight style %s---" % fightStyle)
         simInputs = []
 
-        topSims = runSims(fightStyle, generatedGear["valid"], config["Profile"], config["Sim"]["maxthreads"], metric)
-        htmlOutputs[fightStyle] = generateHtmlOutput(topSims, metric)
+        topSims[fightStyle] = getTopSims(fightStyle, generatedGear["valid"], config["Profile"], config["Sim"]["maxthreads"], metric)
 
-    for fightStyle, fightHtmlOutputs in htmlOutputs.items():
-        print("---Best %s %s for %s results available at:---" % (len(fightHtmlOutputs), metric, fightStyle))
-        for i in range(len(fightHtmlOutputs)):
-            print("%s: %s (%s)" % (i+1, fightHtmlOutputs[i]["output"], fightHtmlOutputs[i][metric]))
+    for fightStyle, fightTopSims in topSims.items():
+        print("---Best %s %s for %s results available at:---" % (len(fightTopSims), metric, fightStyle))
+        for i in range(len(fightTopSims)):
+            print("%s: %s (%s)" % (i+1, fightTopSims[i]["htmlOutput"], fightTopSims[i][metric]))
         print("-------")
         print()
 
@@ -86,4 +86,5 @@ def loadConfig():
 if __name__ == "__main__":
     start_time = time.time()
     main()
-    print("--- Full execution in %s seconds ---" % (time.time() - start_time))
+    timeSeconds = (time.time() - start_time)
+    print("--- Full execution in %s:%s ---" % (math.floor(timeSeconds/60), format(timeSeconds % 60, "00.1f")))

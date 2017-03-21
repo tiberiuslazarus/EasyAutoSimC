@@ -10,7 +10,7 @@ def generateGear(availableGear):
         availableGear["shoulders"] = availableGear["shoulder"]
     if availableGear["wrist"]:
         availableGear["wrists"] = availableGear["wrist"]
-    if not availableGear["off_hand"]:
+    if not availableGear.get("off_hand"):
         availableGear["off_hand"] = ""
 
     ### Split vars to lists ###
@@ -26,7 +26,7 @@ def generateGear(availableGear):
     print("%s Gear possibilities" % (valid + invalid))
     print("Invalid gear combinations: %s" % invalid)
     print("Valid gear combinations: %s" % valid)
-    print("--- Profiles generated in %s seconds ---" % (time.time() - generateStartTime))
+    print("--- Profiles generated in %s seconds ---" % (format(time.time() - generateStartTime, "0.1f")))
     print()
 
     return generatedGear
@@ -94,7 +94,8 @@ def generateGearProfile(outputFileName, equippedGear, configProfile):
     gearProfile += "artifact=%s\n" % (configProfile["artifact"])
 
     for slot, gear in equippedGear.items():
-        gearProfile += "%s=%s\n" % (slot, (gear if gear[0]!="L" else gear[1:]))
+        if gear != "":
+            gearProfile += "%s=%s\n" % (slot, (gear if gear[0]!="L" else gear[1:]))
 
     return gearProfile
 
@@ -119,16 +120,13 @@ def usable(equippedGear):
     nbLeg=0
 
     for slotGear in equippedGear:
-        if equippedGear[slotGear][0]=="L":
+        if equippedGear[slotGear] != "" and equippedGear[slotGear][0]=="L":
             nbLeg=nbLeg+1
-    if nbLeg>legmax:
-        # print("Unusable gear: Too many legendaries")
+    if nbLeg > legmax:
         return False
     elif equippedGear["finger1"]==equippedGear["finger2"]:
-        print("Unusable gear: Rings are the same")
         return False
     elif equippedGear["trinket1"]==equippedGear["trinket2"]:
-        print("Unusable gear: Trinkets are the same")
         return False
     else:
         return True
