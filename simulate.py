@@ -22,7 +22,11 @@ def moveHtmlOutputs(topSims):
         newFileName = "%s/%s.html" % (outputDir, i+1)
         if not os.path.exists(os.path.dirname(os.path.abspath(newFileName))):
             os.makedirs(os.path.dirname(os.path.abspath(newFileName)))
-        shutil.move(topSim["htmlOutput"], newFileName)
+        if os.exists(topSim["htmlOutput"]):
+            shutil.move(topSim["htmlOutput"], newFileName)
+        else:
+            print("--Info: Temp html file for a top simming gear set no longer exists. Regenerating...")
+            newTopSim = runSim(topSim["fightStyle"], topSim["equippedGear"], topSim["configProfile"], topSim["metic"], 15000)
         topSim["htmlOutput"] = newFileName
     return topSims
 
@@ -110,13 +114,13 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
             bestSimResults = tempBestResults
 
         for removedSimResult in list(itertools.filterfalse(lambda x: x in bestSimResults, simResults)):
-            os.remove(removedSimResult["htmlOutput"])
+            removeTempFile(removedSimResult["htmlOutput"])
 
         simInputs = []
         for simResult in simResults:
             simInputs.append([fightStyle, simResult["equippedGear"], profile, metric])
             if not isLastIteration:
-                os.remove(simResult["htmlOutput"])
+                removeTempFile(simResult["htmlOutput"])
 
         print()
 
@@ -129,6 +133,12 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
         os.remove(removedSimResult["htmlOutput"])
 
     return simResults
+
+def removeTempFile(tempFile):
+    try:
+        os.remove(tempFile)
+    except:
+        pass
 
 def runSimsSingleThread(simInputs):
     simResults = []
