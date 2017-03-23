@@ -26,7 +26,7 @@ def moveHtmlOutputs(topSims, metric):
             shutil.move(topSim["htmlOutput"], newFileName)
         else:
             print("--Info: Temp html file for a top simming gear set no longer exists. Regenerating...")
-            newTopSim = runSim(topSim["fightStyle"], topSim["equippedGear"], topSim["configProfile"], topSim[metric], 15000)
+            newTopSim = runSim(topSim["fightStyle"], topSim["equippedGear"], topSim["configProfile"], metric, 15000)
         topSim["htmlOutput"] = newFileName
     return topSims
 
@@ -54,8 +54,7 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
     totalSimTime = 0
     completedSims = 0
 
-    # iterationSequence = [10,100,500,5000,15000]
-    iterationSequence = [10,50,100]
+    iterationSequence = [10,100,500,5000,15000]
 
     simInputs = []
     for gearSet in gear:
