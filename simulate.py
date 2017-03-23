@@ -13,23 +13,22 @@ import shutil
 
 def getTopSims(fightStyle, gear, profile, maxthreads, metric):
     topSims = runSims(fightStyle, gear, profile, maxthreads, metric)
-    moveHtmlOutputs(topSims)
+    moveHtmlOutputs(topSims, metric)
     return topSims
 
-def moveHtmlOutputs(topSims):
+def moveHtmlOutputs(topSims, metric):
     for i, topSim in enumerate(topSims):
         outputDir = "results/%s/%s" % (topSim["configProfile"]["profilename"], topSim["fightStyle"])
         newFileName = "%s/%s.html" % (outputDir, i+1)
         if not os.path.exists(os.path.dirname(os.path.abspath(newFileName))):
             os.makedirs(os.path.dirname(os.path.abspath(newFileName)))
-        if os.exists(topSim["htmlOutput"]):
+        if os.path.isfile(topSim["htmlOutput"]):
             shutil.move(topSim["htmlOutput"], newFileName)
         else:
             print("--Info: Temp html file for a top simming gear set no longer exists. Regenerating...")
-            newTopSim = runSim(topSim["fightStyle"], topSim["equippedGear"], topSim["configProfile"], topSim["metic"], 15000)
+            newTopSim = runSim(topSim["fightStyle"], topSim["equippedGear"], topSim["configProfile"], topSim[metric], 15000)
         topSim["htmlOutput"] = newFileName
     return topSims
-
 
 def generateHtmlOutput(simInputs, metric):
     outputId = 1
@@ -55,7 +54,8 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
     totalSimTime = 0
     completedSims = 0
 
-    iterationSequence = [100,200,500,5000,15000]
+    # iterationSequence = [10,100,500,5000,15000]
+    iterationSequence = [10,50,100]
 
     simInputs = []
     for gearSet in gear:
@@ -117,11 +117,10 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
             removeTempFile(removedSimResult["htmlOutput"])
 
         simInputs = []
-        for simResult in simResults:
+        for simResult in bestSimResults:
             simInputs.append([fightStyle, simResult["equippedGear"], profile, metric])
             if not isLastIteration:
                 removeTempFile(simResult["htmlOutput"])
-
         print()
 
     if metric in smallestMetrics:
@@ -130,7 +129,7 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
         bestSimResults = [simDict for simDict in heapq.nlargest(minResultSize, simResults, key=itemgetter(metric))]
 
     for removedSimResult in list(itertools.filterfalse(lambda x: x in bestSimResults, simResults)):
-        os.remove(removedSimResult["htmlOutput"])
+        removeTempFile(removedSimResult["htmlOutput"])
 
     return simResults
 
