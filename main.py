@@ -87,4 +87,4 @@ if __name__ == "__main__":
     start_time = time.time()
     main()
     timeSeconds = (time.time() - start_time)
-    print("--- Full execution in %s:%s ---" % (math.floor(timeSeconds/60), format(timeSeconds % 60, "00.1f")))
+    print("--- Full execution in %s:%s ---" % (math.floor(timeSeconds/60), "{:04.1f}".format(timeSeconds % 60)))
