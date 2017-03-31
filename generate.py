@@ -90,7 +90,7 @@ def generateGearProfile(outputFileName, equippedGear, configProfile):
     gearProfile += "level=%s\n" % (configProfile["level"])
     gearProfile += "role=%s\n" % (configProfile["role"])
     gearProfile += "position=%s\n" % (configProfile["position"])
-    gearProfile += "talents=%s\n" % (configProfile["talents"])
+    gearProfile += "talents=%s\n" % (configProfile["talentSet"])
     gearProfile += "artifact=%s\n" % (configProfile["artifact"])
 
     for slot, gear in equippedGear.items():

@@ -43,6 +43,19 @@ Fight styles can be configured and the top 5 dps for each fight style will be ou
 fightstyle=HelterSkelter,Patchwerk,HecticAddCleave,Ultraxion,Beastlord
 ```
 
+### Talents
+
+Talent sets can be defined in your profile file. All fight styles will be simmed with all available talent sets. The top combinations of gear and talents will be returned.
+
+```
+[Profile]
+talents=1111321
+```
+
+```
+[Profile]
+talents=1111321,1111111,2222222,3333333
+```
 
 ### Metric Optimization
 

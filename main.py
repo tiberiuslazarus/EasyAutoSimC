@@ -19,7 +19,6 @@ def main():
     topSims = {}
 
     for fightStyle in config["Sim"]["fightstyle"].split(","):
-        print("---Simming profiles for fight style %s---" % fightStyle)
         simInputs = []
 
         topSims[fightStyle] = getTopSims(fightStyle, generatedGear["valid"], config["Profile"], config["Sim"]["maxthreads"], metric)
@@ -27,7 +26,7 @@ def main():
     for fightStyle, fightTopSims in topSims.items():
         print("---Best %s %s for %s results available at:---" % (len(fightTopSims), metric, fightStyle))
         for i in range(len(fightTopSims)):
-            print("%s: %s (%s)" % (i+1, fightTopSims[i]["htmlOutput"], fightTopSims[i][metric]))
+            print("%s: %s (%s) (Talents: %s)" % (i+1, fightTopSims[i]["htmlOutput"], "{:.1f}".format(fightTopSims[i][metric]), fightTopSims[i]["configProfile"]["talentSet"]))
         print("-------")
         print()
 
