@@ -56,3 +56,5 @@ target/
 *.ini
 !example_config/*.ini
 results/
+*.json
+*.simc

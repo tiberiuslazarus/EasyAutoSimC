@@ -11,8 +11,17 @@ import math
 import itertools
 import shutil
 
+smallestMetrics = ["dtps", "dmg_taken", "theck_meloree_index", "effective_theck_meloree_index"]
+minResultSize = 5
+
 def getTopSims(fightStyle, gear, profile, maxthreads, metric):
-    topSims = runSims(fightStyle, gear, profile, maxthreads, metric)
+    topSims = []
+    for talentSet in profile["talents"].split(","):
+        print("---Simming profiles for fight style %s with talents %s---" % (fightStyle, talentSet))
+        profile["talentSet"] = talentSet
+        topSims.extend(runSims(fightStyle, gear, profile, maxthreads, metric))
+
+    topSims = getBestSimResults(metric, topSims)
 
     for i, topSim in enumerate(topSims):
         outputDir = "results/%s/%s" % (topSim["configProfile"]["profilename"], topSim["fightStyle"])
@@ -56,8 +65,6 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
     totalProfiles = len(gear)
     topSims = []
     maxthreads = int(maxthreads)
-    smallestMetrics = ["dtps", "dmg_taken", "theck_meloree_index", "effective_theck_meloree_index"]
-    minResultSize = 5
     totalSimTime = 0
     completedSims = 0
 
@@ -112,10 +119,7 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
                 tempBestResults = [x for x in simResults if (x[metric] + x["error"]) > bestMetric]
 
         if len(tempBestResults) < minResultSize:
-            if metric in smallestMetrics:
-                bestSimResults = [simDict for simDict in heapq.nsmallest(minResultSize, simResults, key=itemgetter(metric))]
-            else:
-                bestSimResults = [simDict for simDict in heapq.nlargest(minResultSize, simResults, key=itemgetter(metric))]
+            bestSimResults = getBestSimResults(metric, simResults)
         else:
             bestSimResults = tempBestResults
 
@@ -129,14 +133,18 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
                 removeTempFile(simResult["htmlOutput"])
         print()
 
-    if metric in smallestMetrics:
-        bestSimResults = [simDict for simDict in heapq.nsmallest(minResultSize, simResults, key=itemgetter(metric))]
-    else:
-        bestSimResults = [simDict for simDict in heapq.nlargest(minResultSize, simResults, key=itemgetter(metric))]
+    bestSimResults = getBestSimResults(metric, simResults)
 
     for removedSimResult in list(itertools.filterfalse(lambda x: x in bestSimResults, simResults)):
         removeTempFile(removedSimResult["htmlOutput"])
 
+    return bestSimResults
+
+def getBestSimResults(metric, simResults):
+    if metric in smallestMetrics:
+        bestSimResults = [simDict for simDict in heapq.nsmallest(minResultSize, simResults, key=itemgetter(metric))]
+    else:
+        bestSimResults = [simDict for simDict in heapq.nlargest(minResultSize, simResults, key=itemgetter(metric))]
     return bestSimResults
 
 def removeTempFile(tempFile):
