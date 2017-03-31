@@ -1,4 +1,4 @@
-# ExtraAutoSimC
+# ExtraAutoSimC (EASC)
 ---
 
 System to generate gearing options from owned items for WoW characters and then feed them to [SimulationCraft](http://simulationcraft.org/) to provide optimal gear choices. Heavily based off of [AutoSimC](https://github.com/SimCMinMax/AutoSimC).
@@ -10,7 +10,7 @@ Created to work in Python3. Maybe 2? Idk.
 
 ## SimC Verison
 
-simc-715-02-win64-13c760b
+simc-720-01-win64-17969b1
 
 
 ## Usage

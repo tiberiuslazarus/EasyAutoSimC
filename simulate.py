@@ -137,7 +137,7 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
     for removedSimResult in list(itertools.filterfalse(lambda x: x in bestSimResults, simResults)):
         removeTempFile(removedSimResult["htmlOutput"])
 
-    return simResults
+    return bestSimResults
 
 def removeTempFile(tempFile):
     try:
