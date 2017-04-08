@@ -57,6 +57,13 @@ talents=1111321
 talents=1111321,1111111,2222222,3333333
 ```
 
+Alternatively, may run sim against all possible talent combinations. This may take quite long time.
+
+```
+[Profile]
+talents=all
+```
+
 ### Metric Optimization
 
 ```
@@ -82,4 +89,4 @@ Valid metric options:
 * Configuration options:
   * ~~to sim multiple fight types (patchwerk, heavy movement, cleave)~~ -- DONE
   * ~~to optimise for a different metric (DPS, DPS to Primary target in cleave fights, DTPS)~~ -- DONE
-  * to compare talent sets as well as gear
+  * ~~to compare talent sets as well as gear~~ -- Done
