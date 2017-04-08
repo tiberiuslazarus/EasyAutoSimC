@@ -20,13 +20,12 @@ def main():
 
     for fightStyle in config["Sim"]["fightstyle"].split(","):
         simInputs = []
-
         topSims[fightStyle] = getTopSims(fightStyle, generatedGear["valid"], config["Profile"], config["Sim"]["maxthreads"], metric)
 
     for fightStyle, fightTopSims in topSims.items():
         print("---Best %s %s for %s results available at:---" % (len(fightTopSims), metric, fightStyle))
         for i in range(len(fightTopSims)):
-            print("%s: %s (%s) (Talents: %s)" % (i+1, fightTopSims[i]["htmlOutput"], "{:.1f}".format(fightTopSims[i][metric]), fightTopSims[i]["configProfile"]["talentSet"]))
+            print("%s: %s (%s +/- %s) (Talents: %s)" % (i+1, fightTopSims[i]["htmlOutput"], "{:.1f}".format(fightTopSims[i][metric]), "{:.1f}".format(fightTopSims[i]["error"]), fightTopSims[i]["configProfile"]["talentSet"]))
         print("-------")
         print()
 
@@ -78,9 +77,25 @@ def loadConfig():
         print("Unknown metric value (%s) in config file. Valid Metrics are one of: %s" % (config["Sim"]["metric"], validMetrics))
         sys.exit(98)
 
+    if config.has_option("Profile", "talents"):
+        if config["Profile"]["talents"].lower() == "all":
+            config["Profile"]["talents"] = allTalents()
+
     print()
 
     return dict(config)
+
+def allTalents():
+    talents = ""
+    for a in range(1,4):
+        for b in range(1,4):
+            for c in range(1,4):
+                for d in range(1,4):
+                    for e in range(1,4):
+                        for f in range(1,4):
+                            for g in range(1,4):
+                                talents += "%s%s%s%s%s%s%s," % (a,b,c,d,e,f,g)
+    return talents[:-1]
 
 if __name__ == "__main__":
     start_time = time.time()

@@ -15,13 +15,7 @@ smallestMetrics = ["dtps", "dmg_taken", "theck_meloree_index", "effective_theck_
 minResultSize = 5
 
 def getTopSims(fightStyle, gear, profile, maxthreads, metric):
-    topSims = []
-    for talentSet in profile["talents"].split(","):
-        print("---Simming profiles for fight style %s with talents %s---" % (fightStyle, talentSet))
-        profile["talentSet"] = talentSet
-        topSims.extend(runSims(fightStyle, gear, profile, maxthreads, metric))
-
-    topSims = getBestSimResults(metric, topSims)
+    topSims = getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric))
 
     for i, topSim in enumerate(topSims):
         outputDir = "results/%s/%s" % (topSim["configProfile"]["profilename"], topSim["fightStyle"])
@@ -62,7 +56,7 @@ def generateHtmlOutput(simInputs, metric):
     return htmlOutputs
 
 def runSims(fightStyle, gear, profile, maxthreads, metric):
-    totalProfiles = len(gear)
+    talentSets = profile["talents"].split(",")
     topSims = []
     maxthreads = int(maxthreads)
     totalSimTime = 0
@@ -71,8 +65,10 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
     iterationSequence = [10,100,500,5000,15000]
 
     simInputs = []
-    for gearSet in gear:
-        simInputs.append([fightStyle, gearSet, profile, metric])
+    for talentSet in talentSets:
+        profile["talentSet"] = talentSet
+        for gearSet in gear:
+            simInputs.append([fightStyle, gearSet, profile, metric])
 
     for iterations in iterationSequence:
         isLastIteration = (iterations == iterationSequence[len(iterationSequence)-1])
@@ -82,13 +78,16 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
         for simInput in simInputs:
             simInput.append(iterations)
 
-        print("Total size of run at %s iterations: %s" % (iterations, len(simInputs)))
-
         simResults = []
+        maxBatchSize=max(100, (math.ceil(len(simInputs) / 100.0)))
+
+        print("Total size of run at %s iterations: %s (%s Talent Sets * %s Gear Sets)" % (iterations, len(simInputs), len(talentSets), len(gear)))
+        print("Batch size of %s" % min(maxBatchSize, len(simInputs)))
+
         while (len(simInputs) > 0):
             batchStartTime = time.time()
 
-            batchSize=min(100, len(simInputs))
+            batchSize=min(maxBatchSize, len(simInputs))
             batchInputs = simInputs[:batchSize]
             del simInputs[:batchSize]
 
@@ -103,7 +102,11 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
             print("Completed last batch of %s in %s seconds" % (len(batchInputs), format((time.time() - batchStartTime), ".1f")))
             if len(simInputs) > 0:
                 secondsPerSim = (totalSimTime/completedSims)*len(simInputs)
-                print("Estimated time remaining: %s minutes" % (math.ceil(secondsPerSim/60)))
+                estRemaining = math.ceil(secondsPerSim/60)
+                if estRemaining == 1:
+                    print("Estimated time remaining: less than 1 minute")
+                else:
+                    print("Estimated time remaining: %s minutes" % (estRemaining))
 
         simResultMetrics = [(simResult[metric], simResult["error"]) for simResult in simResults]
 
