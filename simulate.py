@@ -66,6 +66,8 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
 
     simInputs = []
     for talentSet in talentSets:
+        if talentSet == "":
+            continue
         profile["talentSet"] = talentSet
         for gearSet in gear:
             simInputs.append([fightStyle, gearSet, profile, metric])
