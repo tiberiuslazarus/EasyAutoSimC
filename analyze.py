@@ -12,7 +12,6 @@ def processFile(outputFile, metric):
             return (float(simInfo["sim"]["players"][0]["collected_data"][metric]["mean"]), float(simInfo["sim"]["players"][0]["collected_data"][metric]["mean_std_dev"]))
         except Exception as e:
             print('--- Error reading simulation output file (%s) with error: %s ---' % (outputFile, e))
-            traceback.print_exc()
             print("--- File contents ---")
             for line in jsonFile:
                 print(line)
