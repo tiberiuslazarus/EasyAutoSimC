@@ -13,6 +13,7 @@ import shutil
 
 smallestMetrics = ["dtps", "dmg_taken", "theck_meloree_index", "effective_theck_meloree_index"]
 minResultSize = 5
+iterationSequence = [10,100,500,5000,15000]
 
 def getTopSims(fightStyle, gear, profile, maxthreads, metric):
     topSims = getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric))
@@ -62,8 +63,6 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
     totalSimTime = 0
     completedSims = 0
 
-    iterationSequence = [10,100,500,5000,15000]
-
     simInputs = []
     for talentSet in talentSets:
         if talentSet == "":
@@ -71,6 +70,8 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
         profile["talentSet"] = talentSet
         for gearSet in gear:
             simInputs.append([fightStyle, gearSet, profile, metric])
+
+    print("%s Talent Sets * %s Gear Sets" % (len(talentSets), len(gear)))
 
     for iterations in iterationSequence:
         isLastIteration = (iterations == iterationSequence[len(iterationSequence)-1])
@@ -83,7 +84,7 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
         simResults = []
         maxBatchSize=max(100, (math.ceil(len(simInputs) / 100.0)))
 
-        print("Total size of run at %s iterations: %s (%s Talent Sets * %s Gear Sets)" % (iterations, len(simInputs), len(talentSets), len(gear)))
+        print("Total size of run at %s iterations: %s" % (iterations, len(simInputs)))
         print("Batch size of %s" % min(maxBatchSize, len(simInputs)))
 
         while (len(simInputs) > 0):
@@ -187,20 +188,25 @@ def runSimsMultiThread(simInputs, maxthreads):
     return simDicts
 
 def runSim(fightStyle, equippedGear, configProfile, metric="dps", iterations=1000):
-    gearProfileFile = tempfile.NamedTemporaryFile(mode="w", suffix=".simc", delete=False)
+    gearProfileFile = tempfile.NamedTemporaryFile(mode="w", suffix=".simc", prefix="easc_", delete=False)
     gearProfileFile.write(generateGearProfile(gearProfileFile.name, equippedGear, configProfile))
 
-    outputFileJson = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
-    outputFileHtml = tempfile.NamedTemporaryFile(mode="w", suffix=".html", delete=False)
+    outputFileJson = tempfile.NamedTemporaryFile(mode="w", suffix=".json", prefix="easc_", delete=False)
 
     inputFile = gearProfileFile.name
     gearProfileFile.close()
-
     outputFileJson.close()
-    outputFileHtml.close()
 
-    subprocess.check_call(["simcraft/simc.exe", inputFile, "json=%s" % outputFileJson.name, "html=%s" % outputFileHtml.name, "threads=1", "fight_style=%s" % fightStyle, "iterations=%s" % iterations], stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
-    simDict = {"equippedGear": equippedGear, "fightStyle": fightStyle, "configProfile": configProfile, "htmlOutput": outputFileHtml.name}
+    simcCall = ["simcraft/simc.exe", inputFile, "json=%s" % outputFileJson.name, "threads=1", "fight_style=%s" % fightStyle, "iterations=%s" % iterations]
+    outputFileHtml = None
+
+    if iterations == max(iterationSequence):
+        outputFileHtml = tempfile.NamedTemporaryFile(mode="w", suffix=".html", prefix="easc_", delete=False)
+        simcCall.append("html=%s" % outputFileHtml.name)
+
+    subprocess.check_call(simcCall, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
+
+    simDict = {"equippedGear": equippedGear, "fightStyle": fightStyle, "configProfile": configProfile, "htmlOutput": (outputFileHtml.name if outputFileHtml else "")}
 
     analysisResult = processFile(outputFileJson, metric)
     simDict[metric] = analysisResult[0]
