@@ -83,19 +83,19 @@ def iterateGear(gearOptions):
 ### Function to generate a simc profile ###
 
 def generateGearProfile(outputFileName, equippedGear, configProfile):
-    gearProfile = ""
-    gearProfile += "%s=%s_%s\n" % (configProfile["class"], configProfile["profilename"], outputFileName)
-    gearProfile += "specialization=%s\n" % (configProfile["spec"])
-    gearProfile += "race=%s\n" % (configProfile["race"])
-    gearProfile += "level=%s\n" % (configProfile["level"])
-    gearProfile += "role=%s\n" % (configProfile["role"])
-    gearProfile += "position=%s\n" % (configProfile["position"])
-    gearProfile += "talents=%s\n" % (configProfile["talentSet"])
-    gearProfile += "artifact=%s\n" % (configProfile["artifact"])
+    gearProfile = []
+    gearProfile.append("%s=%s_%s" % (configProfile["class"], configProfile["profilename"], outputFileName))
+    gearProfile.append("specialization=%s" % (configProfile["spec"]))
+    gearProfile.append("race=%s" % (configProfile["race"]))
+    gearProfile.append("level=%s" % (configProfile["level"]))
+    gearProfile.append("role=%s" % (configProfile["role"]))
+    gearProfile.append("position=%s" % (configProfile["position"]))
+    gearProfile.append("talents=%s" % (configProfile["talentSet"]))
+    gearProfile.append("artifact=%s" % (configProfile["artifact"]))
 
     for slot, gear in equippedGear.items():
         if gear != "":
-            gearProfile += "%s=%s\n" % (slot, (gear if gear[0]!="L" else gear[1:]))
+            gearProfile.append("%s=%s" % (slot, (gear if gear[0]!="L" else gear[1:])))
 
     return gearProfile
 

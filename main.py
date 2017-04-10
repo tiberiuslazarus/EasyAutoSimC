@@ -5,8 +5,10 @@ from analyze import *
 import configparser
 import sys
 import time
+import tempfile
 
 def main():
+    cleanTempDir()
     config = loadConfig()
     print("Performing gear comparisons for %s on Fight Styles: %s" % (config["Profile"]["profilename"], config["Sim"]["fightstyle"]))
     print("Using %s threads" % config["Sim"]["maxthreads"])
@@ -96,6 +98,15 @@ def allTalents():
                             for g in range(1,4):
                                 talents += "%s%s%s%s%s%s%s," % (a,b,c,d,e,f,g)
     return talents[:-1]
+
+def cleanTempDir():
+    print("Cleaning temporary directory")
+    with os.scandir(tempfile.gettempdir()) as tempDir:
+        for entry in tempDir:
+            if entry.is_file() and (entry.name.startswith("easc_") or (entry.name.endswith('.html') or entry.name.endswith('.json') or entry.name.endswith('.simc'))):
+                os.remove(entry)
+    print("Done cleaning temporary directory")
+
 
 if __name__ == "__main__":
     start_time = time.time()
