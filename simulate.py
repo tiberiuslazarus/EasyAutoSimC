@@ -188,31 +188,39 @@ def runSimsMultiThread(simInputs, maxthreads):
     return simDicts
 
 def runSim(fightStyle, equippedGear, configProfile, metric="dps", iterations=1000):
-    gearProfileFile = tempfile.NamedTemporaryFile(mode="w", suffix=".simc", prefix="easc_", delete=False)
-    gearProfileFile.write(generateGearProfile(gearProfileFile.name, equippedGear, configProfile))
+    # gearProfileFile = tempfile.NamedTemporaryFile(mode="w", suffix=".simc", prefix="easc_", delete=False)
+    # gearProfileFile.write(generateGearProfile(gearProfileFile.name, equippedGear, configProfile))
 
-    outputFileJson = tempfile.NamedTemporaryFile(mode="w", suffix=".json", prefix="easc_", delete=False)
+    # outputFileJson = tempfile.NamedTemporaryFile(mode="w", suffix=".json", prefix="easc_", delete=False)
 
-    inputFile = gearProfileFile.name
-    gearProfileFile.close()
-    outputFileJson.close()
+    simProfile = generateGearProfile("easc", equippedGear, configProfile)
 
-    simcCall = ["simcraft/simc.exe", inputFile, "json=%s" % outputFileJson.name, "threads=1", "fight_style=%s" % fightStyle, "iterations=%s" % iterations]
+    # inputFile = gearProfileFile.name
+    # gearProfileFile.close()
+    # outputFileJson.close()
+
+    simcCall = ["simcraft/simc.exe", "threads=1", "fight_style=%s" % fightStyle, "iterations=%s" % iterations]
+    simcCall.extend(simProfile)
     outputFileHtml = None
 
     if iterations == max(iterationSequence):
         outputFileHtml = tempfile.NamedTemporaryFile(mode="w", suffix=".html", prefix="easc_", delete=False)
         simcCall.append("html=%s" % outputFileHtml.name)
 
-    subprocess.check_call(simcCall, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
+    simcOutput = subprocess.check_output(simcCall).decode("utf-8")
 
-    simDict = {"equippedGear": equippedGear, "fightStyle": fightStyle, "configProfile": configProfile, "htmlOutput": (outputFileHtml.name if outputFileHtml else "")}
+    analysisResult = processOutput(simcOutput, metric)
 
-    analysisResult = processFile(outputFileJson, metric)
-    simDict[metric] = analysisResult[0]
-    simDict["error"] = analysisResult[1]*1.96
+    simDict = {
+        "equippedGear": equippedGear,
+        "fightStyle": fightStyle,
+        "configProfile": configProfile,
+        "htmlOutput": (outputFileHtml.name if outputFileHtml else ""),
+        metric: analysisResult[0],
+        "error": analysisResult[1]
+    }
 
-    os.remove(gearProfileFile.name)
-    os.remove(outputFileJson.name)
+    # os.remove(gearProfileFile.name)
+    # os.remove(outputFileJson.name)
 
     return simDict
