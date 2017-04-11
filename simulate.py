@@ -188,16 +188,7 @@ def runSimsMultiThread(simInputs, maxthreads):
     return simDicts
 
 def runSim(fightStyle, equippedGear, configProfile, metric="dps", iterations=1000):
-    # gearProfileFile = tempfile.NamedTemporaryFile(mode="w", suffix=".simc", prefix="easc_", delete=False)
-    # gearProfileFile.write(generateGearProfile(gearProfileFile.name, equippedGear, configProfile))
-
-    # outputFileJson = tempfile.NamedTemporaryFile(mode="w", suffix=".json", prefix="easc_", delete=False)
-
     simProfile = generateGearProfile("easc", equippedGear, configProfile)
-
-    # inputFile = gearProfileFile.name
-    # gearProfileFile.close()
-    # outputFileJson.close()
 
     simcCall = ["simcraft/simc.exe", "threads=1", "fight_style=%s" % fightStyle, "iterations=%s" % iterations]
     simcCall.extend(simProfile)
@@ -207,7 +198,7 @@ def runSim(fightStyle, equippedGear, configProfile, metric="dps", iterations=100
         outputFileHtml = tempfile.NamedTemporaryFile(mode="w", suffix=".html", prefix="easc_", delete=False)
         simcCall.append("html=%s" % outputFileHtml.name)
 
-    simcOutput = subprocess.check_output(simcCall).decode("utf-8")
+    simcOutput = subprocess.check_output(simcCall, stderr=subprocess.DEVNULL).decode("utf-8")
 
     analysisResult = processOutput(simcOutput, metric)
 
@@ -219,8 +210,5 @@ def runSim(fightStyle, equippedGear, configProfile, metric="dps", iterations=100
         metric: analysisResult[0],
         "error": analysisResult[1]
     }
-
-    # os.remove(gearProfileFile.name)
-    # os.remove(outputFileJson.name)
 
     return simDict
