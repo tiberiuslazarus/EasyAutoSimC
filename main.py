@@ -82,6 +82,16 @@ def loadConfig():
     if config.has_option("Profile", "talents"):
         if config["Profile"]["talents"].lower() == "all":
             config["Profile"]["talents"] = allTalents()
+        else:
+            for talent in config["Profile"]["talents"].split(","):
+                print(talent)
+                print(len(talent))
+                print(talent.isnumeric())
+                print([x for x in talent if (not x.isdigit() or int(x) not in [0,1,2])])
+                if len(talent) != 7 or not talent.isnumeric() or len([x for x in talent if (not x.isdigit() or int(x) not in [1,2,3])]) != 0:
+                    print("Invalid talents supplied: %s" % (config["Profile"]["talents"]))
+                    sys.exit(97)
+
 
     print()
 
