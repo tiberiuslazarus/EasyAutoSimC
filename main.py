@@ -84,10 +84,6 @@ def loadConfig():
             config["Profile"]["talents"] = allTalents()
         else:
             for talent in config["Profile"]["talents"].split(","):
-                print(talent)
-                print(len(talent))
-                print(talent.isnumeric())
-                print([x for x in talent if (not x.isdigit() or int(x) not in [0,1,2])])
                 if len(talent) != 7 or not talent.isnumeric() or len([x for x in talent if (not x.isdigit() or int(x) not in [1,2,3])]) != 0:
                     print("Invalid talents supplied: %s" % (config["Profile"]["talents"]))
                     sys.exit(97)
@@ -122,4 +118,5 @@ if __name__ == "__main__":
     start_time = time.time()
     main()
     timeSeconds = (time.time() - start_time)
-    print("--- Full execution in %s:%s ---" % (math.floor(timeSeconds/60), "{:04.1f}".format(timeSeconds % 60)))
+    m, s = divmod(timeSeconds, 60)
+    print("--- Full execution in %s:%s ---" % ('{0:02d}'.format(int(m)), "{0:04.1f}".format(s)))

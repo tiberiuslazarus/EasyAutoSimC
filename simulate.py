@@ -25,7 +25,7 @@ def getTopSims(fightStyle, gear, profile, maxthreads, metric):
             os.makedirs(os.path.dirname(os.path.abspath(newFileName)))
         if not os.path.isfile(topSim["htmlOutput"]):
             print("--Info: Temp html file for a top simming gear set no longer exists. Regenerating...")
-            newTopSim = runSim(topSim["fightStyle"], topSim["equippedGear"], topSim["configProfile"], metric, 15000)
+            newTopSim = runSim(topSim["fightStyle"], topSim["equippedGear"], topSim["configProfile"], metric, iterationSequence[len(iterationSequence)-1])
             topSim = newTopSim
 
         moveHtmlOutputs(topSim["htmlOutput"], newFileName)
@@ -61,7 +61,6 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
     topSims = []
     maxthreads = int(maxthreads)
     totalSimTime = 0
-    completedSims = 0
 
     simInputs = []
     for talentSet in talentSets:
@@ -74,6 +73,7 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
     print("%s Talent Sets * %s Gear Sets" % (len(talentSets), len(gear)))
 
     for iterations in iterationSequence:
+        totalIterationGear = len(simInputs)
         isLastIteration = (iterations == iterationSequence[len(iterationSequence)-1])
         if len(simInputs) <= minResultSize:
             if not isLastIteration:
@@ -82,7 +82,10 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
             simInput.append(iterations)
 
         simResults = []
-        maxBatchSize=max(100, (math.ceil(len(simInputs) / 100.0)))
+        iterationTime = 0
+        completedSims = 0
+        maxBatchSize=max(100, (10**math.floor(math.log(len(simInputs),10))))
+        maxBatchSize=10
 
         print("Total size of run at %s iterations: %s" % (iterations, len(simInputs)))
         print("Batch size of %s" % min(maxBatchSize, len(simInputs)))
@@ -99,18 +102,13 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
             else:
                 simResults.extend(runSimsSingleThread(batchInputs))
 
+            batchTime = (time.time() - batchStartTime)
             completedSims += batchSize
-            totalSimTime += (time.time() - batchStartTime)
+            iterationTime += batchTime
 
-            print("Completed last batch of %s in %s seconds" % (len(batchInputs), format((time.time() - batchStartTime), ".1f")))
-            if len(simInputs) > 0:
-                secondsPerSim = (totalSimTime/completedSims)*len(simInputs)
-                estRemaining = math.ceil(secondsPerSim/60)
-                if estRemaining == 1:
-                    print("Estimated time remaining: less than 1 minute")
-                else:
-                    print("Estimated time remaining: %s minutes" % (estRemaining))
+            printProgressBar(completedSims, totalIterationGear, batchTime, iterationTime)
 
+        totalSimTime += iterationTime
         simResultMetrics = [(simResult[metric], simResult["error"]) for simResult in simResults]
 
         if metric in smallestMetrics:
@@ -194,7 +192,7 @@ def runSim(fightStyle, equippedGear, configProfile, metric="dps", iterations=100
     simcCall.extend(simProfile)
     outputFileHtml = None
 
-    if iterations == max(iterationSequence):
+    if iterations == iterationSequence[len(iterationSequence)-1]:
         outputFileHtml = tempfile.NamedTemporaryFile(mode="w", suffix=".html", prefix="easc_", delete=False)
         simcCall.append("html=%s" % outputFileHtml.name)
 
@@ -212,3 +210,25 @@ def runSim(fightStyle, equippedGear, configProfile, metric="dps", iterations=100
     }
 
     return simDict
+
+def printProgressBar(completed, totalSize, stageTime, totalIterationTime, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█'):
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (completed / float(totalSize)))
+
+    estRemaining = 0
+    if completed < totalSize:
+        remainingSeconds = (totalIterationTime/completed)*totalSize
+        estRemaining = math.ceil(remainingSeconds/60)
+
+    filledLength = int(length * completed // totalSize)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    if completed < totalSize: 
+        if estRemaining == 1:
+            print('\r%s |%s| %s%% %s (Estimated remaining time: less than 1 minute)' %
+                (prefix, bar, percent, suffix), end = '\r')
+        else:
+            print('\r%s |%s| %s%% %s (Estimated remaining time: %s %s)' %
+                (prefix, bar, percent, suffix, estRemaining, "minutes" if estRemaining != 1 else "minute"), end = '\r')
+    else:
+        m, s = divmod(totalIterationTime, 60)
+        print('\r%s |%s| %s%% %s (Time taken: %s:%s)                               ' 
+            % (prefix, bar, percent, suffix, "{0:02d}".format(int(m)), "{0:04.1f}".format(s)))
