@@ -62,6 +62,7 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
     maxthreads = int(maxthreads)
     totalSimTime = 0
 
+    print("--Generating talent and gear combinations--")
     simInputs = []
     for talentSet in talentSets:
         if talentSet == "":
@@ -71,6 +72,7 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
             simInputs.append([fightStyle, gearSet, profile, metric])
 
     print("%s Talent Sets * %s Gear Sets" % (len(talentSets), len(gear)))
+    print()
 
     for iterations in iterationSequence:
         totalIterationGear = len(simInputs)
@@ -84,11 +86,13 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
         simResults = []
         iterationTime = 0
         completedSims = 0
-        maxBatchSize=max(100, (10**math.floor(math.log(len(simInputs),10))))
-        maxBatchSize=10
+        # maxBatchSize = max(100, (10**math.floor(math.log(len(simInputs),10))))
+        maxBatchSize = 1000
 
         print("Total size of run at %s iterations: %s" % (iterations, len(simInputs)))
         print("Batch size of %s" % min(maxBatchSize, len(simInputs)))
+
+        printProgressBar(completedSims, totalIterationGear, 0, 0)
 
         while (len(simInputs) > 0):
             batchStartTime = time.time()
@@ -214,13 +218,19 @@ def runSim(fightStyle, equippedGear, configProfile, metric="dps", iterations=100
 def printProgressBar(completed, totalSize, stageTime, totalIterationTime, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█'):
     percent = ("{0:." + str(decimals) + "f}").format(100 * (completed / float(totalSize)))
 
+    filledLength = int(length * completed // totalSize)
+    bar = fill * filledLength + '-' * (length - filledLength)
+
+    if completed == 0:
+        print('\r%s |%s| %s%% %s' %
+                (prefix, bar, percent, suffix), end = '\r')
+        return
+
     estRemaining = 0
     if completed < totalSize:
         remainingSeconds = (totalIterationTime/completed)*totalSize
         estRemaining = math.ceil(remainingSeconds/60)
 
-    filledLength = int(length * completed // totalSize)
-    bar = fill * filledLength + '-' * (length - filledLength)
     if completed < totalSize: 
         if estRemaining == 1:
             print('\r%s |%s| %s%% %s (Estimated remaining time: less than 1 minute)' %
