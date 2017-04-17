@@ -10,7 +10,7 @@ Created to work in Python3 on Windows 64bit. It is likely possible to replace th
 
 ## SimC Verison
 
-simc-720-01-win64-17969b1
+simc-720-02-win64-835f0af
 
 
 ## Usage
@@ -90,3 +90,7 @@ Valid metric options:
   * ~~to sim multiple fight types (patchwerk, heavy movement, cleave)~~ -- DONE
   * ~~to optimise for a different metric (DPS, DPS to Primary target in cleave fights, DTPS)~~ -- DONE
   * ~~to compare talent sets as well as gear~~ -- Done
+  * Player skill level
+  * Modify food and potions. Possibly in the same vein as talents with ability to sim multiple/all?
+  * Option to calculate stat weights and/or plots for top simming gear sets
+* GUI of some sort
