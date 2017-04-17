@@ -27,7 +27,11 @@ def main():
 	for fightStyle, fightTopSims in topSims.items():
 		print("---Best %s %s for %s results available at:---" % (len(fightTopSims), metric, fightStyle))
 		for i in range(len(fightTopSims)):
-			print("%s: %s (%s +/- %s) (Talents: %s)" % (i+1, fightTopSims[i]["htmlOutput"], "{:.1f}".format(fightTopSims[i][metric]), "{:.1f}".format(fightTopSims[i]["error"]), fightTopSims[i]["configProfile"]["talentSet"]))
+			print("%s: %s (%s +/- %s) (Talents: %s)" %
+			 (i+1, fightTopSims[i]["htmlOutput"],
+			  "{:.1f}".format(fightTopSims[i][metric]),
+			  "{:.1f}".format(fightTopSims[i]["error"]),
+			  fightTopSims[i]["configProfile"]["talentset"]))
 		print("-------")
 		print()
 
