@@ -91,3 +91,5 @@ Valid metric options:
   * ~~to optimise for a different metric (DPS, DPS to Primary target in cleave fights, DTPS)~~ -- DONE
   * ~~to compare talent sets as well as gear~~ -- Done
   * Player skill level
+  * Modify food and potions. Possibly in the same vein as talents with ability to sim multiple/all?
+* GUI of some sort
