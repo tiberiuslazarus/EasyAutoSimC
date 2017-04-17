@@ -92,4 +92,5 @@ Valid metric options:
   * ~~to compare talent sets as well as gear~~ -- Done
   * Player skill level
   * Modify food and potions. Possibly in the same vein as talents with ability to sim multiple/all?
+  * Option to calculate stat weights and/or plots for top simming gear sets
 * GUI of some sort
