@@ -86,7 +86,7 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
 		simResults = []
 		iterationTime = 0
 		completedSims = 0
-		maxBatchSize = 100 if totalIterationGear < 3000 else 1000
+		maxBatchSize = 10 if totalIterationGear < 100 else 100 if totalIterationGear < 3000 else 1000
 
 		print("Total size of run at %s iterations: %s" % (iterations, len(simInputs)))
 		print("Batch size of %s" % min(maxBatchSize, len(simInputs)))
@@ -112,30 +112,28 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
 			printProgressBar(completedSims, totalIterationGear, batchTime, iterationTime)
 
 		# iteration complete; calculate results for next pass
-		print("--Analyzing iteration sim results--")
-		totalSimTime += iterationTime
-		bestSimResults = getBestSimResults(metric, simResults)
+		if not isLastIteration:
+			totalSimTime += iterationTime
+			bestSimResults = getBestSimResults(metric, simResults)
+			for removedSimResult in list(itertools.filterfalse(lambda x: x in bestSimResults, simResults)):
+				removeTempFile(removedSimResult["htmlOutput"])
 
-		for removedSimResult in list(itertools.filterfalse(lambda x: x in bestSimResults, simResults)):
-			removeTempFile(removedSimResult["htmlOutput"])
-
-		simInputs = []
-		for simResult in bestSimResults:
-			simInputs.append([fightStyle, simResult["equippedGear"], simResult["configProfile"], metric])
-			if not isLastIteration:
-				removeTempFile(simResult["htmlOutput"])
-		print()
+			simInputs = []
+			for simResult in bestSimResults:
+				simInputs.append([fightStyle, simResult["equippedGear"], simResult["configProfile"], metric])
 
 	# All iterations done
-	bestSimResults = getBestSimResults(metric, simResults)
+	bestSimResults = getBestSimResults(metric, simResults, minResults=True)
 
 	for removedSimResult in list(itertools.filterfalse(lambda x: x in bestSimResults, simResults)):
 		removeTempFile(removedSimResult["htmlOutput"])
 
 	return bestSimResults
 
-def getBestSimResults(metric, simResults):
+def getBestSimResults(metric, simResults, minResults=None):
+	print("--Analysing simc results--")
 
+	analysisStartTime = time.time()
 	bestSimResults = None
 
 	simResultMetrics = [(simResult[metric], simResult["error"]) for simResult in simResults]
@@ -143,21 +141,24 @@ def getBestSimResults(metric, simResults):
 	if metric in smallestMetrics:
 		bestMetricTuple = min(simResultMetrics, key = lambda t: t[0]+t[1])
 		bestMetric=bestMetricTuple[0]+bestMetricTuple[1]
-		for simResult in simResults:
-			tempBestResults = [x for x in simResults if (x[metric] - x["error"]) < bestMetric]
+		tempBestResults = [x for x in simResults if (x[metric] - x["error"]) < bestMetric]
 	else:
 		bestMetricTuple = max(simResultMetrics, key = lambda t: t[0]-t[1])
 		bestMetric=bestMetricTuple[0]-bestMetricTuple[1]
-		for simResult in simResults:
-			tempBestResults = [x for x in simResults if (x[metric] + x["error"]) > bestMetric]
+		tempBestResults = [x for x in simResults if (x[metric] + x["error"]) > bestMetric]
 
-	if len(tempBestResults) >= minResultSize:
-		bestSimResults = tempBestResults
-	else:
+	if len(tempBestResults) < minResultSize or minResults:
 		if metric in smallestMetrics:
 			bestSimResults = [simDict for simDict in heapq.nsmallest(minResultSize, simResults, key=itemgetter(metric))]
 		else:
 			bestSimResults = [simDict for simDict in heapq.nlargest(minResultSize, simResults, key=itemgetter(metric))]
+	else:
+		bestSimResults = tempBestResults
+	
+	m, s = divmod((time.time() - analysisStartTime), 60)
+	print("--- Done analysing results in %s:%s ---" % ('{0:02d}'.format(int(m)), "{0:04.1f}".format(s)))
+	print()
+
 	return bestSimResults
 
 def removeTempFile(tempFile):
@@ -234,7 +235,7 @@ def printProgressBar(completed, totalSize, stageTime, totalIterationTime, prefix
 
 	estRemaining = 0
 	if completed < totalSize:
-		remainingSeconds = (totalIterationTime/completed)*totalSize
+		remainingSeconds = (totalIterationTime/completed)*(totalSize-completed)
 		estRemaining = math.ceil(remainingSeconds/60)
 
 	if completed < totalSize: 
