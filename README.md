@@ -77,9 +77,7 @@ Valid metric options:
  * dpse
  * hps
  * dtps
- * dmg_taken
  * theck_meloree_index / tmi
- * effective_theck_meloree_index / etmi
 
 
 ## Future
