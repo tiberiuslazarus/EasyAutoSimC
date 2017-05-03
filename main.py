@@ -72,13 +72,10 @@ def loadConfig():
 		print("INFO: Defaulting to optimizing %s." % config["Sim"]["metric"])
 
 	# extend the acronym because simc is stupid
-	if config["Sim"]["metric"] == "tmi":
-		config["Sim"]["metric"] = "theck_meloree_index"
+	if config["Sim"]["metric"] == "theck_meloree_index":
+		config["Sim"]["metric"] = "tmi"
 
-	if config["Sim"]["metric"] == "etmi":
-		config["Sim"]["metric"] = "effective_theck_meloree_index"
-
-	validMetrics = ["dps", "prioritydps", "dpse", "hps", "dtps", "dmg_taken", "theck_meloree_index", "tmi", "effective_theck_meloree_index", "etmi"]
+	validMetrics = ["dps", "prioritydps", "dpse", "hps", "dtps", "theck_meloree_index", "tmi"]
 	if config["Sim"]["metric"] not in validMetrics:
 		print("Unknown metric value (%s) in config file. Valid Metrics are one of: %s" % (config["Sim"]["metric"], validMetrics))
 		sys.exit(98)
