@@ -15,8 +15,8 @@ smallestMetrics = ["dtps", "theck_meloree_index", "tmi"]
 minResultSize = 10
 iterationSequence = [10,100,500,5000,15000]
 
-def getTopSims(fightStyle, gear, profile, maxthreads, metric):
-	topSims = getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric))
+def getTopSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
+	topSims = getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric, statWeights))
 
 	for i, topSim in enumerate(topSims):
 		outputDir = "results/%s/%s" % (topSim["configProfile"]["profilename"], topSim["fightStyle"])
@@ -25,7 +25,8 @@ def getTopSims(fightStyle, gear, profile, maxthreads, metric):
 			os.makedirs(os.path.dirname(os.path.abspath(newFileName)))
 		if not os.path.isfile(topSim["htmlOutput"]):
 			print("--Info: Temp html file for a top simming gear set no longer exists. Regenerating...")
-			newTopSim = runSim(topSim["fightStyle"], topSim["equippedGear"], topSim["configProfile"], metric, iterationSequence[len(iterationSequence)-1])
+			newTopSim = runSim(topSim["fightStyle"], topSim["equippedGear"], topSim["configProfile"],
+				metric, statWeights, iterationSequence[len(iterationSequence)-1])
 			topSim = newTopSim
 
 		moveHtmlOutputs(topSim["htmlOutput"], newFileName)
@@ -49,14 +50,14 @@ def generateHtmlOutput(simInputs, metric):
 
 	for simInput in simInputs:
 		# outputFileName = "results/%s/%s/%s.html" % (simInput["configProfile"]["profilename"], simInput["fightStyle"], outputId)
-		htmlDict = runSim(simInput["fightStyle"], simInput["equippedGear"], simInput["configProfile"], metric, 15000, delete=False)
+		htmlDict = runSim(simInput["fightStyle"], simInput["equippedGear"], simInput["configProfile"], metric, iterations=15000, delete=False)
 		htmlDict["output"] = outputFileName
 		htmlDict[metric] = simInput[metric]
 		htmlOutputs.append(htmlDict)
 		outputId += 1
 	return htmlOutputs
 
-def runSims(fightStyle, gear, profile, maxthreads, metric):
+def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
 	talentSets = profile["talents"].split(",")
 	topSims = []
 	maxthreads = int(maxthreads)
@@ -69,7 +70,7 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
 			continue
 		profile["talentset"] = talentSet
 		for gearSet in gear:
-			simInputs.append([fightStyle, gearSet, dict(profile), metric])
+			simInputs.append([fightStyle, gearSet, dict(profile), metric, statWeights])
 
 	print("%s Talent Sets * %s Gear Sets" % (len(talentSets), len(gear)))
 	print()
@@ -90,6 +91,8 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
 
 		print("Total size of run at %s iterations: %s" % (iterations, len(simInputs)))
 		print("Batch size of %s" % min(maxBatchSize, len(simInputs)))
+		if isLastIteration and statWeights != "0":
+			print("Beginning final gear iterations calculating stat weights. This may take quite some time. Grab a drink? Do some pushups?")
 
 		printProgressBar(completedSims, totalIterationGear, 0, 0)
 
@@ -195,7 +198,7 @@ def runSimsMultiThread(simInputs, maxthreads):
 		pool.join()
 	return simDicts
 
-def runSim(fightStyle, equippedGear, configProfile, metric="dps", iterations=1000):
+def runSim(fightStyle, equippedGear, configProfile, metric="dps", statWeights="0", iterations=1000):
 	simProfile = generateGearProfile("easc", equippedGear, configProfile)
 
 	simcCall = ["simcraft/simc.exe", "threads=1", "fight_style=%s" % fightStyle, "iterations=%s" % iterations]
@@ -205,6 +208,12 @@ def runSim(fightStyle, equippedGear, configProfile, metric="dps", iterations=100
 	if iterations == iterationSequence[len(iterationSequence)-1]:
 		outputFileHtml = tempfile.NamedTemporaryFile(mode="w", suffix=".html", prefix="easc_", delete=False)
 		simcCall.append("html=%s" % outputFileHtml.name)
+
+		if statWeights != "0":
+			simcCall.append("calculate_scale_factors=1")
+
+			if metric == "tmi":
+				simcCall.append("scale_over=tmi")
 
 	simcOutput = subprocess.check_output(simcCall, stderr=subprocess.DEVNULL).decode("utf-8")
 

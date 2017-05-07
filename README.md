@@ -1,7 +1,7 @@
 # ExtraAutoSimC (EASC)
 ---
 
-System to generate gearing options from owned items for WoW characters and then feed them to [SimulationCraft](http://simulationcraft.org/) to provide optimal gear choices. Heavily based off of [AutoSimC](https://github.com/SimCMinMax/AutoSimC).
+System to generate gearing options from owned items for WoW characters and then feed them to [SimulationCraft](http://simulationcraft.org/) to provide optimal gear choices. Heavily inspired by and initially based off of [AutoSimC](https://github.com/SimCMinMax/AutoSimC).
 
 Created to work in Python3 on Windows 64bit. It is likely possible to replace the included simcraft/simc.exe file with a 32 bit. But that seems dumb.
 
@@ -79,6 +79,15 @@ Valid metric options:
  * dtps
  * theck_meloree_index / tmi
 
+### Stat Weights
+
+Calculate stat weights for top simming gear sets. This will likely add significant time to the final portion of your run.
+
+```
+[Sim]
+statweights=1
+```
+
 
 ### Player Skill
 
@@ -103,7 +112,7 @@ skill=100
   * ~~to sim multiple fight types (patchwerk, heavy movement, cleave)~~ -- DONE
   * ~~to optimise for a different metric (DPS, DPS to Primary target in cleave fights, DTPS)~~ -- DONE
   * ~~to compare talent sets as well as gear~~ -- Done
-  * Player skill level
+  * ~~Player skill level~~
   * Modify food and potions. Possibly in the same vein as talents with ability to sim multiple/all?
   * Option to calculate stat weights and/or plots for top simming gear sets
 * GUI of some sort
