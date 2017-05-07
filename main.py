@@ -17,12 +17,13 @@ def main():
 	generatedGear = generateGear(config["Gear"])
 
 	metric = config["Sim"]["metric"]
+	statWeights = config["Sim"]["statWeights"]
 	htmlOutputs = {}
 	topSims = {}
 
 	for fightStyle in config["Sim"]["fightstyle"].split(","):
 		simInputs = []
-		topSims[fightStyle] = getTopSims(fightStyle, generatedGear["valid"], config["Profile"], config["Sim"]["maxthreads"], metric)
+		topSims[fightStyle] = getTopSims(fightStyle, generatedGear["valid"], config["Profile"], config["Sim"]["maxthreads"], metric, statWeights)
 
 	for fightStyle, fightTopSims in topSims.items():
 		print("---Best %s %s for %s results available at:---" % (len(fightTopSims), metric, fightStyle))
@@ -69,7 +70,27 @@ def loadConfig():
 
 	if not config.has_option("Sim", "metric"):
 		config["Sim"]["metric"] = "dps"
-		print("INFO: Defaulting to optimizing %s." % config["Sim"]["metric"])
+		print("INFO: Defaulting to optimizing %s." % config["Sim"]["metric"])\
+
+	if not config.has_option("Sim", "statWeights"):
+		config["Sim"]["statWeights"] = "0"
+		print("INFO: Defaulting to not calculating stat weights.")
+	elif config["Sim"]["statWeights"] != "0" or config["Sim"]["statWeights"] != "1":
+		config["Sim"]["statWeights"] = "0"
+		print("INFO: Invalid statweight option. Defaulting to not calculating stat weights.")
+
+	if not config.has_option("Profile", "skill"):
+		config["Profile"]["skill"] = "100"
+		print("INFO: Defaulting to elite (100).")
+	else:
+		try: 
+			if int(config["Profile"]["skill"]) <= 0 or int(config["Profile"]["skill"]) > 100:
+				config["Profile"]["skill"] = "100"
+				print("WARN: Skill option not a valid number between 1 and 100. Defaulting to elite (100).")
+		except Exception:
+			config["Profile"]["skill"] = "100"
+			print("WARN: Skill option not a valid number. Defaulting to elite (100).")
+
 
 	# extend the acronym because simc is stupid
 	if config["Sim"]["metric"] == "theck_meloree_index":
@@ -111,7 +132,10 @@ def cleanTempDir():
 	with os.scandir(tempfile.gettempdir()) as tempDir:
 		for entry in tempDir:
 			if entry.is_file() and (entry.name.startswith("easc_") or (entry.name.endswith('.html') or entry.name.endswith('.json') or entry.name.endswith('.simc'))):
-				os.remove(entry)
+				try:
+					os.remove(entry)
+				except:
+					pass
 	print("Done cleaning temporary directory")
 
 
