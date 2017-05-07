@@ -109,10 +109,11 @@ skill=100
 * Cleaner output of gear for top profiles. Having to open separate html files to see the equipped gear kind of sucks and is not very Auto. -- * In process *
 * ~~Clean up SimC profiles after execution~~ -- DONE
 * Configuration options:
-  * ~~to sim multiple fight types (patchwerk, heavy movement, cleave)~~ -- DONE
-  * ~~to optimise for a different metric (DPS, DPS to Primary target in cleave fights, DTPS)~~ -- DONE
-  * ~~to compare talent sets as well as gear~~ -- Done
+  * ~~Sim multiple fight types (patchwerk, heavy movement, cleave)~~ -- DONE
+  * ~~Optimise for a different metric (DPS, DPS to Primary target in cleave fights, DTPS)~~ -- DONE
+  * ~~Compare talent sets as well as gear~~ -- Done
   * ~~Player skill level~~
+  * ~~Calculate stat weights for top simming gear sets~~
+  * Plot stats for top simming gear sets
   * Modify food and potions. Possibly in the same vein as talents with ability to sim multiple/all?
-  * Option to calculate stat weights and/or plots for top simming gear sets
 * GUI of some sort
