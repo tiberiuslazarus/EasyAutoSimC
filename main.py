@@ -71,6 +71,19 @@ def loadConfig():
 		config["Sim"]["metric"] = "dps"
 		print("INFO: Defaulting to optimizing %s." % config["Sim"]["metric"])
 
+	if not config.has_option("Profile", "skill"):
+		config["Profile"]["skill"] = "100"
+		print("INFO: Defaulting to elite (100).")
+	else:
+		try: 
+			if int(config["Profile"]["skill"]) <= 0 or int(config["Profile"]["skill"]) > 100:
+				config["Profile"]["skill"] = "100"
+				print("WARN: Skill option not a valid number between 1 and 100. Defaulting to elite (100).")
+		except Exception:
+			config["Profile"]["skill"] = "100"
+			print("WARN: Skill option not a valid number. Defaulting to elite (100).")
+
+
 	# extend the acronym because simc is stupid
 	if config["Sim"]["metric"] == "theck_meloree_index":
 		config["Sim"]["metric"] = "tmi"

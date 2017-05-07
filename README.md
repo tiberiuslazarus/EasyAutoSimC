@@ -80,6 +80,21 @@ Valid metric options:
  * theck_meloree_index / tmi
 
 
+### Player Skill
+
+Set the skill level of the player in the sim. Accepts numbers 1-100.
+
+SimC Equivalents:
+|Elite|100|
+|Good|95|
+|Average|85|
+|Ouch! Fire is hot!|75|
+
+```
+[Profile]
+skill=100
+```
+
 ## Future
 
 * Cleaner output of gear for top profiles. Having to open separate html files to see the equipped gear kind of sucks and is not very Auto. -- * In process *
