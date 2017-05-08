@@ -16,8 +16,8 @@ minResultSize = 10
 iterationSequence = [10,100,500,5000,15000]
 iterationSequence = [1,5,10,20,50]
 
-def getTopSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
-	topSims = getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric, statWeights))
+def getTopSims(fightStyle, gear, profile, maxthreads, metric):
+	topSims = getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric))
 
 	for i, topSim in enumerate(topSims):
 		outputDir = "results/%s/%s" % (topSim["configProfile"]["profilename"], topSim["fightStyle"])
@@ -59,7 +59,7 @@ def moveHtmlOutputs(curFileName, newFileName):
 # 		outputId += 1
 # 	return htmlOutputs
 
-def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
+def runSims(fightStyle, gear, profile, maxthreads, metric):
 	talentSets = profile["talents"].split(",")
 	topSims = []
 	maxthreads = int(maxthreads)
@@ -72,7 +72,7 @@ def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
 			continue
 		profile["talentset"] = talentSet
 		for gearSet in gear:
-			simInputs.append([fightStyle, gearSet, dict(profile), metric, statWeights])
+			simInputs.append([fightStyle, gearSet, dict(profile), metric])
 
 	print("%s Talent Sets * %s Gear Sets" % (len(talentSets), len(gear)))
 	print()
@@ -94,8 +94,6 @@ def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
 
 		print("Total size of run at %s iterations: %s" % (iterations, len(simInputs)))
 		print("Batch size of %s" % min(maxBatchSize, len(simInputs)))
-		if isLastIteration and statWeights != "0":
-			print("Beginning final gear iterations calculating stat weights. This may take quite some time. Grab a drink? Do some pushups?")
 
 		printProgressBar(completedSims, totalIterationGear, 0, 0)
 

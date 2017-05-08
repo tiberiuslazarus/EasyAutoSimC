@@ -1,7 +1,7 @@
 # ExtraAutoSimC (EASC)
 ---
 
-System to generate gearing options from owned items for WoW characters and then feed them to [SimulationCraft](http://simulationcraft.org/) to provide optimal gear choices. Heavily inspired by and initially based off of [AutoSimC](https://github.com/SimCMinMax/AutoSimC).
+System to generate gearing options from owned items for WoW characters and then feed them to [SimulationCraft](http://simulationcraft.org/) to provide optimal gear choices. Heavily based off of [AutoSimC](https://github.com/SimCMinMax/AutoSimC).
 
 Created to work in Python3 on Windows 64bit. It is likely possible to replace the included simcraft/simc.exe file with a 32 bit. But that seems dumb.
 
@@ -95,10 +95,10 @@ Set the skill level of the player in the sim. Accepts numbers 1-100.
 
 SimC Equivalents:
 
-|Elite|100|
-|Good|95|
-|Average|85|
-|Ouch! Fire is hot!|75|
+Elite: 100
+Good: 95
+Average: 85
+Ouch! Fire is hot!: 75
 
 ```
 [Profile]
@@ -110,11 +110,10 @@ skill=100
 * Cleaner output of gear for top profiles. Having to open separate html files to see the equipped gear kind of sucks and is not very Auto. -- * In process *
 * ~~Clean up SimC profiles after execution~~ -- DONE
 * Configuration options:
-  * ~~Sim multiple fight types (patchwerk, heavy movement, cleave)~~ -- DONE
-  * ~~Optimise for a different metric (DPS, DPS to Primary target in cleave fights, DTPS)~~ -- DONE
-  * ~~Compare talent sets as well as gear~~ -- Done
-  * ~~Player skill level~~
-  * ~~Calculate stat weights for top simming gear sets~~
-  * Plot stats for top simming gear sets
+  * ~~to sim multiple fight types (patchwerk, heavy movement, cleave)~~ -- DONE
+  * ~~to optimise for a different metric (DPS, DPS to Primary target in cleave fights, DTPS)~~ -- DONE
+  * ~~to compare talent sets as well as gear~~ -- Done
+  * Player skill level
   * Modify food and potions. Possibly in the same vein as talents with ability to sim multiple/all?
+  * Option to calculate stat weights and/or plots for top simming gear sets
 * GUI of some sort

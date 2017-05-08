@@ -92,13 +92,26 @@ def generateGearProfile(outputFileName, equippedGear, configProfile):
 	gearProfile.append("position=%s" % (configProfile["position"]))
 	gearProfile.append("talents=%s" % (configProfile["talentset"]))
 	gearProfile.append("artifact=%s" % (configProfile["artifact"]))
-	gearProfile.append("skill=%s" % (float(configProfile["skill"])/100))
 
 	for slot, gear in equippedGear.items():
 		if gear != "":
 			gearProfile.append("%s=%s" % (slot, (gear if gear[0]!="L" else gear[1:])))
 
 	return gearProfile
+
+
+def generateGearProfileOld(outputFile, equippedGear, configProfile):
+	outputFile.write("%s=%s_%s\n" % (configProfile["class"], configProfile["profilename"], outputFile.name))
+	outputFile.write("specialization=%s\n" % (configProfile["spec"]))
+	outputFile.write("race=%s\n" % (configProfile["race"]))
+	outputFile.write("level=%s\n" % (configProfile["level"]))
+	outputFile.write("role=%s\n" % (configProfile["role"]))
+	outputFile.write("position=%s\n" % (configProfile["position"]))
+	outputFile.write("talents=%s\n" % (configProfile["talents"]))
+	outputFile.write("artifact=%s\n" % (configProfile["artifact"]))
+
+	for slot, gear in equippedGear.items():
+		outputFile.write("%s=%s\n" % (slot, (gear if gear[0]!="L" else gear[1:])))
 
 #check if permutation is valid
 def usable(equippedGear):
