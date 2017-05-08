@@ -14,6 +14,7 @@ import shutil
 smallestMetrics = ["dtps", "theck_meloree_index", "tmi"]
 minResultSize = 10
 iterationSequence = [10,100,500,5000,15000]
+iterationSequence = [1,5,10,20,50]
 
 def getTopSims(fightStyle, gear, profile, maxthreads, metric):
 	topSims = getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric))
@@ -25,7 +26,9 @@ def getTopSims(fightStyle, gear, profile, maxthreads, metric):
 			os.makedirs(os.path.dirname(os.path.abspath(newFileName)))
 		if not os.path.isfile(topSim["htmlOutput"]):
 			print("--Info: Temp html file for a top simming gear set no longer exists. Regenerating...")
-			newTopSim = runSim(topSim["fightStyle"], topSim["equippedGear"], topSim["configProfile"], metric, iterationSequence[len(iterationSequence)-1])
+			print("--Expected file named %s" % topSim["htmlOutput"])
+			newTopSim = runSim(topSim["fightStyle"], topSim["equippedGear"], topSim["configProfile"],
+				metric, statWeights, iterationSequence[len(iterationSequence)-1])
 			topSim = newTopSim
 
 		moveHtmlOutputs(topSim["htmlOutput"], newFileName)
@@ -41,20 +44,20 @@ def moveHtmlOutputs(curFileName, newFileName):
 	else:
 		print("ERROR: expected file (%s) does not exist. Cannot move to (%s)" % (curFileName, newFileName))
 
-def generateHtmlOutput(simInputs, metric):
-	outputId = 1
-	htmlOutputs = []
-	print("Generating html output reports for best %s %s reports" % (len(simInputs), metric))
-	print()
+# def generateHtmlOutput(simInputs, metric):
+# 	outputId = 1
+# 	htmlOutputs = []
+# 	print("Generating html output reports for best %s %s reports" % (len(simInputs), metric))
+# 	print()
 
-	for simInput in simInputs:
-		# outputFileName = "results/%s/%s/%s.html" % (simInput["configProfile"]["profilename"], simInput["fightStyle"], outputId)
-		htmlDict = runSim(simInput["fightStyle"], simInput["equippedGear"], simInput["configProfile"], metric, 15000, delete=False)
-		htmlDict["output"] = outputFileName
-		htmlDict[metric] = simInput[metric]
-		htmlOutputs.append(htmlDict)
-		outputId += 1
-	return htmlOutputs
+# 	for simInput in simInputs:
+# 		# outputFileName = "results/%s/%s/%s.html" % (simInput["configProfile"]["profilename"], simInput["fightStyle"], outputId)
+# 		htmlDict = runSim(simInput["fightStyle"], simInput["equippedGear"], simInput["configProfile"], metric, iterations=15000, delete=False)
+# 		htmlDict["output"] = outputFileName
+# 		htmlDict[metric] = simInput[metric]
+# 		htmlOutputs.append(htmlDict)
+# 		outputId += 1
+# 	return htmlOutputs
 
 def runSims(fightStyle, gear, profile, maxthreads, metric):
 	talentSets = profile["talents"].split(",")
@@ -77,6 +80,7 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
 	for iterations in iterationSequence:
 		totalIterationGear = len(simInputs)
 		isLastIteration = (iterations == iterationSequence[len(iterationSequence)-1])
+		print(isLastIteration)
 		if len(simInputs) <= minResultSize:
 			if not isLastIteration:
 				continue
@@ -114,13 +118,14 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
 		# iteration complete; calculate results for next pass
 		if not isLastIteration:
 			totalSimTime += iterationTime
+
 			bestSimResults = getBestSimResults(metric, simResults)
 			for removedSimResult in list(itertools.filterfalse(lambda x: x in bestSimResults, simResults)):
 				removeTempFile(removedSimResult["htmlOutput"])
 
 			simInputs = []
 			for simResult in bestSimResults:
-				simInputs.append([fightStyle, simResult["equippedGear"], simResult["configProfile"], metric])
+				simInputs.append([fightStyle, simResult["equippedGear"], simResult["configProfile"], metric, statWeights])
 
 	# All iterations done
 	bestSimResults = getBestSimResults(metric, simResults, minResults=True)
@@ -131,12 +136,12 @@ def runSims(fightStyle, gear, profile, maxthreads, metric):
 	return bestSimResults
 
 def getBestSimResults(metric, simResults, minResults=None):
-	print("--Analysing simc results--")
-
-	analysisStartTime = time.time()
 	bestSimResults = None
 
 	simResultMetrics = [(simResult[metric], simResult["error"]) for simResult in simResults]
+	if len(simResultMetrics) == 0:
+		for simResult in simResults:
+			print(simResult)
 
 	if metric in smallestMetrics:
 		bestMetricTuple = min(simResultMetrics, key = lambda t: t[0]+t[1])
@@ -154,10 +159,6 @@ def getBestSimResults(metric, simResults, minResults=None):
 			bestSimResults = [simDict for simDict in heapq.nlargest(minResultSize, simResults, key=itemgetter(metric))]
 	else:
 		bestSimResults = tempBestResults
-	
-	m, s = divmod((time.time() - analysisStartTime), 60)
-	print("--- Done analysing results in %s:%s ---" % ('{0:02d}'.format(int(m)), "{0:04.1f}".format(s)))
-	print()
 
 	return bestSimResults
 
@@ -193,9 +194,10 @@ def runSimsMultiThread(simInputs, maxthreads):
 		sys.exit(2)
 	finally:
 		pool.join()
+
 	return simDicts
 
-def runSim(fightStyle, equippedGear, configProfile, metric="dps", iterations=1000):
+def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, iterations):
 	simProfile = generateGearProfile("easc", equippedGear, configProfile)
 
 	simcCall = ["simcraft/simc.exe", "threads=1", "fight_style=%s" % fightStyle, "iterations=%s" % iterations]
@@ -205,6 +207,11 @@ def runSim(fightStyle, equippedGear, configProfile, metric="dps", iterations=100
 	if iterations == iterationSequence[len(iterationSequence)-1]:
 		outputFileHtml = tempfile.NamedTemporaryFile(mode="w", suffix=".html", prefix="easc_", delete=False)
 		simcCall.append("html=%s" % outputFileHtml.name)
+
+		if statWeights != "0":
+			simcCall.append("calculate_scale_factors=1")
+			if metric == "tmi":
+				simcCall.append("scale_over=tmi")
 
 	simcOutput = subprocess.check_output(simcCall, stderr=subprocess.DEVNULL).decode("utf-8")
 
@@ -223,7 +230,10 @@ def runSim(fightStyle, equippedGear, configProfile, metric="dps", iterations=100
 
 # def printProgressBar(completed, totalSize, stageTime, totalIterationTime, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█'):
 def printProgressBar(completed, totalSize, stageTime, totalIterationTime, prefix = '', suffix = '', decimals = 1, length = 50, fill = '|'):
-	percent = ("{0:." + str(decimals) + "f}").format(100 * (completed / float(totalSize)))
+	if totalSize > 0:
+		percent = ("{0:." + str(decimals) + "f}").format(100 * (completed / float(totalSize)))
+	else:
+		return
 
 	filledLength = int(length * completed // totalSize)
 	bar = fill * filledLength + '-' * (length - filledLength)

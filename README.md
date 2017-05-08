@@ -79,6 +79,31 @@ Valid metric options:
  * dtps
  * theck_meloree_index / tmi
 
+### Stat Weights
+
+Calculate stat weights for top simming gear sets. This will likely add significant time to the final portion of your run.
+
+```
+[Sim]
+statweights=1
+```
+
+
+### Player Skill
+
+Set the skill level of the player in the sim. Accepts numbers 1-100.
+
+SimC Equivalents:
+
+Elite: 100
+Good: 95
+Average: 85
+Ouch! Fire is hot!: 75
+
+```
+[Profile]
+skill=100
+```
 
 ## Future
 
