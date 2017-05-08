@@ -70,7 +70,7 @@ def loadConfig():
 
 	if not config.has_option("Sim", "metric"):
 		config["Sim"]["metric"] = "dps"
-		print("INFO: Defaulting to optimizing %s." % config["Sim"]["metric"])\
+		print("INFO: Defaulting to optimizing %s." % config["Sim"]["metric"])
 
 	if not config.has_option("Sim", "statWeights"):
 		config["Sim"]["statWeights"] = "0"

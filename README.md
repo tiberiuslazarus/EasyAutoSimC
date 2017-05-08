@@ -94,6 +94,7 @@ statweights=1
 Set the skill level of the player in the sim. Accepts numbers 1-100.
 
 SimC Equivalents:
+
 |Elite|100|
 |Good|95|
 |Average|85|
