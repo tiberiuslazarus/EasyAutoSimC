@@ -14,7 +14,6 @@ import shutil
 smallestMetrics = ["dtps", "theck_meloree_index", "tmi"]
 minResultSize = 10
 iterationSequence = [10,100,500,5000,15000]
-iterationSequence = [1,10,50,100,150]
 
 def getTopSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
 	topSims = getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric, statWeights))
@@ -43,20 +42,20 @@ def moveHtmlOutputs(curFileName, newFileName):
 	else:
 		print("ERROR: expected file (%s) does not exist. Cannot move to (%s)" % (curFileName, newFileName))
 
-def generateHtmlOutput(simInputs, metric):
-	outputId = 1
-	htmlOutputs = []
-	print("Generating html output reports for best %s %s reports" % (len(simInputs), metric))
-	print()
+# def generateHtmlOutput(simInputs, metric):
+# 	outputId = 1
+# 	htmlOutputs = []
+# 	print("Generating html output reports for best %s %s reports" % (len(simInputs), metric))
+# 	print()
 
-	for simInput in simInputs:
-		# outputFileName = "results/%s/%s/%s.html" % (simInput["configProfile"]["profilename"], simInput["fightStyle"], outputId)
-		htmlDict = runSim(simInput["fightStyle"], simInput["equippedGear"], simInput["configProfile"], metric, iterations=15000, delete=False)
-		htmlDict["output"] = outputFileName
-		htmlDict[metric] = simInput[metric]
-		htmlOutputs.append(htmlDict)
-		outputId += 1
-	return htmlOutputs
+# 	for simInput in simInputs:
+# 		# outputFileName = "results/%s/%s/%s.html" % (simInput["configProfile"]["profilename"], simInput["fightStyle"], outputId)
+# 		htmlDict = runSim(simInput["fightStyle"], simInput["equippedGear"], simInput["configProfile"], metric, iterations=15000, delete=False)
+# 		htmlDict["output"] = outputFileName
+# 		htmlDict[metric] = simInput[metric]
+# 		htmlOutputs.append(htmlDict)
+# 		outputId += 1
+# 	return htmlOutputs
 
 def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
 	talentSets = profile["talents"].split(",")
@@ -135,9 +134,6 @@ def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
 	return bestSimResults
 
 def getBestSimResults(metric, simResults, minResults=None):
-	print("--Analysing simc results--")
-
-	analysisStartTime = time.time()
 	bestSimResults = None
 
 	simResultMetrics = [(simResult[metric], simResult["error"]) for simResult in simResults]
@@ -158,10 +154,6 @@ def getBestSimResults(metric, simResults, minResults=None):
 			bestSimResults = [simDict for simDict in heapq.nlargest(minResultSize, simResults, key=itemgetter(metric))]
 	else:
 		bestSimResults = tempBestResults
-	
-	m, s = divmod((time.time() - analysisStartTime), 60)
-	print("--- Done analysing results in %s:%s ---" % ('{0:02d}'.format(int(m)), "{0:04.1f}".format(s)))
-	print()
 
 	return bestSimResults
 
@@ -259,3 +251,4 @@ def printProgressBar(completed, totalSize, stageTime, totalIterationTime, prefix
 		m, s = divmod(totalIterationTime, 60)
 		print('\r%s <%s> %s%% %s (Time taken: %s:%s)							   ' 
 			% (prefix, bar, percent, suffix, "{0:02d}".format(int(m)), "{0:04.1f}".format(s)))
+		print()
