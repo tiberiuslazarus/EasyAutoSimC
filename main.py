@@ -8,9 +8,11 @@ import time
 import tempfile
 
 def main():
+	checkVersion()
 	cleanTempDir()
 	config = loadConfig()
 	print("Performing gear comparisons for %s on Fight Styles: %s" % (config["Profile"]["profilename"], config["Sim"]["fightstyle"]))
+	print("Simming at player skill level: %s%%" % config["Profile"]["skill"])
 	print("Using %s threads" % config["Sim"]["maxthreads"])
 	print()
 
@@ -91,7 +93,6 @@ def loadConfig():
 			config["Profile"]["skill"] = "100"
 			print("WARN: Skill option not a valid number. Defaulting to elite (100).")
 
-
 	# extend the acronym because simc is stupid
 	if config["Sim"]["metric"] == "theck_meloree_index":
 		config["Sim"]["metric"] = "tmi"
@@ -138,6 +139,12 @@ def cleanTempDir():
 					pass
 	print("Done cleaning temporary directory")
 
+def checkVersion():
+	try:
+		remoteVersion = url.get("http://example.com/foo/bar")
+		localVersion = open("VERSION").read()
+	except:
+		print("--WARN: Unable to verify version information")
 
 if __name__ == "__main__":
 	start_time = time.time()
