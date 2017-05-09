@@ -123,7 +123,7 @@ def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
 
 			simInputs = []
 			for simResult in bestSimResults:
-				simInputs.append([fightStyle, simResult["equippedGear"], simResult["configProfile"], metric])
+				simInputs.append([fightStyle, simResult["equippedGear"], simResult["configProfile"], metric, statWeights])
 
 	# All iterations done
 	bestSimResults = getBestSimResults(metric, simResults, minResults=True)
@@ -198,7 +198,7 @@ def runSimsMultiThread(simInputs, maxthreads):
 		pool.join()
 	return simDicts
 
-def runSim(fightStyle, equippedGear, configProfile, metric="dps", statWeights="0", iterations=1000):
+def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, iterations):
 	simProfile = generateGearProfile("easc", equippedGear, configProfile)
 
 	simcCall = ["simcraft/simc.exe", "threads=1", "fight_style=%s" % fightStyle, "iterations=%s" % iterations]
