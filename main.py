@@ -17,12 +17,13 @@ def main():
 	generatedGear = generateGear(config["Gear"])
 
 	metric = config["Sim"]["metric"]
+	statWeights = config["Sim"]["statWeights"]
 	htmlOutputs = {}
 	topSims = {}
 
 	for fightStyle in config["Sim"]["fightstyle"].split(","):
 		simInputs = []
-		topSims[fightStyle] = getTopSims(fightStyle, generatedGear["valid"], config["Profile"], config["Sim"]["maxthreads"], metric)
+		topSims[fightStyle] = getTopSims(fightStyle, generatedGear["valid"], config["Profile"], config["Sim"]["maxthreads"], metric, statWeights)
 
 	for fightStyle, fightTopSims in topSims.items():
 		print("---Best %s %s for %s results available at:---" % (len(fightTopSims), metric, fightStyle))
@@ -69,7 +70,7 @@ def loadConfig():
 
 	if not config.has_option("Sim", "metric"):
 		config["Sim"]["metric"] = "dps"
-		print("INFO: Defaulting to optimizing %s." % config["Sim"]["metric"])
+		print("INFO: Defaulting to optimizing %s." % config["Sim"]["metric"])\
 
 	if not config.has_option("Sim", "statWeights"):
 		config["Sim"]["statWeights"] = "0"
@@ -131,7 +132,10 @@ def cleanTempDir():
 	with os.scandir(tempfile.gettempdir()) as tempDir:
 		for entry in tempDir:
 			if entry.is_file() and (entry.name.startswith("easc_") or (entry.name.endswith('.html') or entry.name.endswith('.json') or entry.name.endswith('.simc'))):
-				os.remove(entry)
+				try:
+					os.remove(entry)
+				except:
+					pass
 	print("Done cleaning temporary directory")
 
 
