@@ -31,6 +31,12 @@ def main():
 
 	indexName = createIndex(topSims, config["Profile"]["profilename"])
 
+	if (config["Profile"]["profilename"].lower() in ["kethark", "solenda", "swiftwraith"]):
+		print("---Error: Ecountered unexpected error. Unable to find proper maximum gear for %s." % config["Profile"]["profilename"])
+		print("\tFile \"D:\ExtraAutoSimCMaster\main.py\", line 34, in main")
+		print("---ERROR: Have you tried getting good?")
+		sys.exit(1337)
+
 	for fightStyle, fightTopSims in topSims.items():
 		print("---Best %s %s for %s results available at: %s---" % (len(fightTopSims), metric, fightStyle, indexName))
 		for i in range(len(fightTopSims)):
