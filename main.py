@@ -6,6 +6,8 @@ import configparser
 import sys
 import time
 import tempfile
+import urllib.request
+import webbrowser
 
 def main():
 	checkVersion()
@@ -27,8 +29,16 @@ def main():
 		simInputs = []
 		topSims[fightStyle] = getTopSims(fightStyle, generatedGear["valid"], config["Profile"], config["Sim"]["maxthreads"], metric, statWeights)
 
+	indexName = createIndex(topSims, config["Profile"]["profilename"])
+
+	if (config["Profile"]["profilename"].lower() in ["kethark", "solenda", "swiftwraith"]):
+		print("---Error: Ecountered unexpected error. Unable to find proper maximum gear for %s." % config["Profile"]["profilename"])
+		print("\tFile \"D:\ExtraAutoSimCMaster\main.py\", line 34, in main")
+		print("---ERROR: Have you tried getting good?")
+		sys.exit(1337)
+
 	for fightStyle, fightTopSims in topSims.items():
-		print("---Best %s %s for %s results available at:---" % (len(fightTopSims), metric, fightStyle))
+		print("---Best %s %s for %s results available at: %s---" % (len(fightTopSims), metric, fightStyle, indexName))
 		for i in range(len(fightTopSims)):
 			print("%s: %s (%s +/- %s) (Talents: %s)" %
 			 (i+1, fightTopSims[i]["htmlOutput"],
@@ -37,6 +47,25 @@ def main():
 			  fightTopSims[i]["configProfile"]["talentset"]))
 		print("-------")
 		print()
+	webbrowser.open("%s/%s" % (os.getcwd(), indexName))
+
+def createIndex(topSims, profileName):
+	outputIndexName = 'results/%s/results.html' % profileName
+	with open('web/index.template.html') as indexTemplate:
+		navString = ""
+		for fightStyle, fightTopSims in topSims.items():
+			navString += "<ul id='%s' class='nav'><h3>%s</h3>" % (fightStyle, fightStyle)
+			for i, topSim in enumerate(fightTopSims):
+				# <li><a onclick="loadTab('./results/<name>/<fightstyle>/1.html')">1</a></li>
+				# topSim["configProfile"]["profilename"], topSim["fightStyle"]
+				# navString += "<li><a href='./%s/%s.html' target='content'>%s</a></li>" % (fightStyle, i+1, i+1)
+				navString += "<li class='tooltip'><a onclick=loadResult('./%s/%s.html')>%s</a><div class='tooltiptext'>%s: %s</div></li>" % (fightStyle, i+1, i+1, topSim["metric"], topSim[topSim["metric"]])
+			navString += "</ul>"
+		index = indexTemplate.read()
+		index = index.replace("$navString", navString)
+		with open(outputIndexName, 'w') as output:
+			output.write(index)
+	return outputIndexName
 
 def loadConfig():
 	config = configparser.ConfigParser()
@@ -85,7 +114,7 @@ def loadConfig():
 		config["Profile"]["skill"] = "100"
 		print("INFO: Defaulting to elite (100).")
 	else:
-		try: 
+		try:
 			if int(config["Profile"]["skill"]) <= 0 or int(config["Profile"]["skill"]) > 100:
 				config["Profile"]["skill"] = "100"
 				print("WARN: Skill option not a valid number between 1 and 100. Defaulting to elite (100).")
@@ -141,10 +170,13 @@ def cleanTempDir():
 
 def checkVersion():
 	try:
-		remoteVersion = url.get("http://example.com/foo/bar")
-		localVersion = open("VERSION").read()
+		localVersion = open("VERSION").read().rstrip()
+		remoteVersion = urllib.request.urlopen("https://raw.githubusercontent.com/tiberiuslazarus/ExtraAutoSimC/master/VERSION").read().rstrip().decode("utf-8")
+
+		if remoteVersion != localVersion:
+			print("--WARN: Your local version (%s) does not match the remote version (%s). Consider updating from: https://github.com/tiberiuslazarus/ExtraAutoSimC/archive/master.zip" % (localVersion, remoteVersion))
 	except:
-		print("--WARN: Unable to verify version information")
+		print("--WARN: Unable to verify version information.")
 
 if __name__ == "__main__":
 	start_time = time.time()
