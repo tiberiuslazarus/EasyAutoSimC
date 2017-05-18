@@ -1,0 +1,34 @@
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="../../web/style.css">
+    <script type="text/javascript" src="../../web/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript">
+      var jquery = $;
+
+      function loadResult(result) {
+        // window.location = "#" + result;
+        // $("#content").attr("src", result);
+        jquery("#content").load(result);
+        setStyle(result)
+      }
+
+      function setStyle(result) {
+        console.log("yay");
+        jquery("nav a").removeClass("current");
+        jquery("a[onclick*='" + result + "']").addClass("current");
+      }
+    </script>
+  </head>
+  <body>
+    <div id="left">
+      <nav>
+        $navString
+      </nav>
+    </div>
+    <div id="right">
+      <!-- <iframe name="content" id="content" onload="setStyle()">
+      </iframe> -->
+      <div id="content"></div>
+    </div>
+  </body>
+</html>

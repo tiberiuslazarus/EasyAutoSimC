@@ -1,3 +1,4 @@
+from string import Template
 import multiprocessing
 import time
 import sys
@@ -13,7 +14,7 @@ import shutil
 
 smallestMetrics = ["dtps", "theck_meloree_index", "tmi"]
 minResultSize = 10
-iterationSequence = [10,100,500,5000,15000]
+iterationSequence = [10,100,500,5000,11]
 
 def getTopSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
 	topSims = getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric, statWeights))
@@ -202,6 +203,7 @@ def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, iterati
 		"fightStyle": fightStyle,
 		"configProfile": configProfile,
 		"htmlOutput": (outputFileHtml.name if outputFileHtml else ""),
+		"metric": metric,
 		metric: analysisResult[0],
 		"error": analysisResult[1]
 	}
@@ -225,7 +227,7 @@ def printProgressBar(completed, totalSize, stageTime, totalIterationTime, prefix
 		remainingSeconds = (totalIterationTime/completed)*(totalSize-completed)
 		estRemaining = math.ceil(remainingSeconds/60)
 
-	if completed < totalSize: 
+	if completed < totalSize:
 		if estRemaining == 1:
 			print('\r%s <%s> %s%% %s (Estimated remaining time: less than 1 minute)' %
 				(prefix, bar, percent, suffix), end = '\r')
@@ -234,6 +236,6 @@ def printProgressBar(completed, totalSize, stageTime, totalIterationTime, prefix
 				(prefix, bar, percent, suffix, estRemaining, "minutes" if estRemaining != 1 else "minute"), end = '\r')
 	else:
 		m, s = divmod(totalIterationTime, 60)
-		print('\r%s <%s> %s%% %s (Time taken: %s:%s)							   ' 
+		print('\r%s <%s> %s%% %s (Time taken: %s:%s)							   '
 			% (prefix, bar, percent, suffix, "{0:02d}".format(int(m)), "{0:04.1f}".format(s)))
 		print()
