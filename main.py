@@ -76,6 +76,8 @@ def createIndex(topSims, profileName):
 						if "=" in itemProperty:
 							prop = itemProperty.split("=")
 							itemDict[prop[0]] = prop[1]
+					if "id" not in itemDict:
+						itemDict["id"] = "0"
 					parsedItems.append(itemDict)
 
 				allGearIds = [item["id"] for item in parsedItems]
@@ -93,14 +95,19 @@ def createIndex(topSims, profileName):
 					if "enchant_id" in item:
 						wowdbItem += "&amp;enchantment=%s" % (item["enchant_id"].replace("/", ","))
 
-					wowdbLink = "%s%s" % (link, wowdbItem)
+					wowdbUrl = "%s%s" % (link, wowdbItem)
+					link = "<a href='%s' data-tooltip-href='%s'>%s</a>" % (wowdbUrl, wowdbUrl, item["id"])
+
+					divContents = "<div class='gear %s'><div class='slot'>%s</div><div class='item'>%s</div></div>" % (slot, slot.upper(), link)
+					if item["id"] == "0":
+						divContents = "<div class='gear %s'><div class='slot'>%s</div><div class='item'>&nbsp;</div></div>" % (slot, slot.upper())
 
 					if slot in leftSlots:
-						leftDiv += "<div class='gear %s'><div class='slot'>%s</div><div class='item'><a href='%s' data-tooltip-href='%s'>%s</a></div></div>" % (slot, slot.upper(), wowdbLink, wowdbLink, item["id"])
+						leftDiv += divContents
 					elif slot in rightSlots:
-						rightDiv += "<div class='gear %s'><div class='slot'>%s</div><div class='item'><a href='%s' data-tooltip-href='%s'>%s</a></div></div>" % (slot, slot.upper(), wowdbLink, wowdbLink, item["id"])
+						rightDiv += divContents
 					else:
-						weaponDiv += "<div class='gear %s'><div class='slot'>%s</div><div class='item'><a href='%s' data-tooltip-href='%s'>%s</a></div></div>" % (slot, slot.upper(), wowdbLink, wowdbLink, item["id"])
+						weaponDiv += divContents
 				leftDiv += "</div>"
 				rightDiv += "</div>"
 				weaponDiv += "</div>"
