@@ -2,20 +2,17 @@
   <head>
     <link rel="stylesheet" type="text/css" href="../../web/style.css">
     <script type="text/javascript" src="../../web/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="http://static-azeroth.cursecdn.com/current/js/syndication/tt.js"></script>
     <script type="text/javascript">
-      var jquery = $;
-
-      function loadResult(result) {
-        // window.location = "#" + result;
-        // $("#content").attr("src", result);
-        jquery("#content").load(result);
+      function showResult(result) {
+        $("#content .result").removeClass("selectedResult")
+        $("#content #" + result).addClass("selectedResult");
         setStyle(result)
       }
 
       function setStyle(result) {
-        console.log("yay");
-        jquery("nav a").removeClass("current");
-        jquery("a[onclick*='" + result + "']").addClass("current");
+        $("nav a").removeClass("current");
+        $("a[onclick*='" + result + "']").filter(":first").addClass("current");
       }
     </script>
   </head>
@@ -26,9 +23,7 @@
       </nav>
     </div>
     <div id="right">
-      <!-- <iframe name="content" id="content" onload="setStyle()">
-      </iframe> -->
-      <div id="content"></div>
+      <div id="content">$resultsString</div>
     </div>
   </body>
 </html>

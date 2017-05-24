@@ -32,10 +32,9 @@ def main():
 	indexName = createIndex(topSims, config["Profile"]["profilename"])
 
 	if (config["Profile"]["profilename"].lower() in ["kethark", "solenda", "swiftwraith"]):
-		print("---Error: Ecountered unexpected error. Unable to find proper maximum gear for %s." % config["Profile"]["profilename"])
+		print("---ERROR: Ecountered unexpected error. Unable to find proper maximum gear for %s." % config["Profile"]["profilename"])
 		print("\tFile \"D:\ExtraAutoSimCMaster\main.py\", line 34, in main")
 		print("---ERROR: Have you tried getting good?")
-		sys.exit(1337)
 
 	for fightStyle, fightTopSims in topSims.items():
 		print("---Best %s %s for %s results available at: %s---" % (len(fightTopSims), metric, fightStyle, indexName))
@@ -53,16 +52,67 @@ def createIndex(topSims, profileName):
 	outputIndexName = 'results/%s/results.html' % profileName
 	with open('web/index.template.html') as indexTemplate:
 		navString = ""
+		resultsString = ""
 		for fightStyle, fightTopSims in topSims.items():
 			navString += "<ul id='%s' class='nav'><h3>%s</h3>" % (fightStyle, fightStyle)
 			for i, topSim in enumerate(fightTopSims):
 				# <li><a onclick="loadTab('./results/<name>/<fightstyle>/1.html')">1</a></li>
 				# topSim["configProfile"]["profilename"], topSim["fightStyle"]
 				# navString += "<li><a href='./%s/%s.html' target='content'>%s</a></li>" % (fightStyle, i+1, i+1)
-				navString += "<li class='tooltip'><a onclick=loadResult('./%s/%s.html')>%s</a><div class='tooltiptext'>%s: %s</div></li>" % (fightStyle, i+1, i+1, topSim["metric"], topSim[topSim["metric"]])
+				navString += "<li class='tooltip'><a onclick=showResult('%s_%s')>%s</a><div class='tooltiptext'>%s: %s</div></li>" % (fightStyle, i+1, i+1, topSim["metric"], topSim[topSim["metric"]])
+				resultsString += "<div id='%s_%s' class='result'><div class='header'>Result #%s for %s</div><div class='metric'>%s %s</div>" % (
+					fightStyle, i+1, i+1, fightStyle, topSim["metric"].upper(), topSim[topSim["metric"]]
+				)
+				leftSlots = ["head", "neck", "shoulders", "back", "chest", "wrists"]
+				rightSlots = ["hands", "waist", "legs", "feet", "finger1", "finger2", "trinket1", "trinket2"]
+				leftDiv = "<div id='gearLeft'>"
+				rightDiv = "<div id='gearRight'>"
+				weaponDiv = "<div id='gearWeapon'>"
+
+				parsedItems = []
+				for slot, item in topSim["equippedGear"].items():
+					itemDict = {"slot": slot}
+					for itemProperty in item.split(","):
+						if "=" in itemProperty:
+							prop = itemProperty.split("=")
+							itemDict[prop[0]] = prop[1]
+					parsedItems.append(itemDict)
+
+				allGearIds = [item["id"] for item in parsedItems]
+
+				for item in parsedItems:
+					print(item)
+					slot = item["slot"]
+					link = "http://www.wowdb.com/items/"
+
+					wowdbItem = "%s?setPieces=%s" % (item["id"], ",".join(allGearIds))
+					if "bonus_id" in item:
+						wowdbItem += "&amp;bonusIDs=%s" % (item["bonus_id"].replace("/", ","))
+					if "gem_id" in item:
+						wowdbItem += "&amp;gems=%s" % (item["gem_id"].replace("/", ","))
+					if "enchant_id" in item:
+						wowdbItem += "&amp;enchantment=%s" % (item["enchant_id"].replace("/", ","))
+
+					wowdbLink = "%s%s" % (link, wowdbItem)
+
+					if slot in leftSlots:
+						leftDiv += "<div class='gear %s'><div class='slot'>%s</div><div class='item'><a href='%s' data-tooltip-href='%s'>%s</a></div></div>" % (slot, slot.upper(), wowdbLink, wowdbLink, item["id"])
+					elif slot in rightSlots:
+						rightDiv += "<div class='gear %s'><div class='slot'>%s</div><div class='item'><a href='%s' data-tooltip-href='%s'>%s</a></div></div>" % (slot, slot.upper(), wowdbLink, wowdbLink, item["id"])
+					else:
+						weaponDiv += "<div class='gear %s'><div class='slot'>%s</div><div class='item'><a href='%s' data-tooltip-href='%s'>%s</a></div></div>" % (slot, slot.upper(), wowdbLink, wowdbLink, item["id"])
+				leftDiv += "</div>"
+				rightDiv += "</div>"
+				weaponDiv += "</div>"
+				resultsString += "<div id='gear'>"
+				resultsString += leftDiv
+				resultsString += rightDiv
+				resultsString += weaponDiv
+				resultsString += "</div></div>"
 			navString += "</ul>"
 		index = indexTemplate.read()
 		index = index.replace("$navString", navString)
+		index = index.replace("$resultsString", resultsString)
 		with open(outputIndexName, 'w') as output:
 			output.write(index)
 	return outputIndexName
