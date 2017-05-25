@@ -22,7 +22,6 @@ body {
   left: 300px;
   width: 1500px;
   margin: 10px;
-  top: 20%;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -85,6 +84,12 @@ ul.nav li a.current{
   font-weight: bold;
   font-family: 'Ultra', sans-serif;
   text-shadow: 0 2px #480015, 0 3px #777;
+  display: inline-block;
+  margin: 10px 20px;
+}
+
+.name, .metric {
+  display: block;
 }
 
 /* Tooltip container */
@@ -126,6 +131,9 @@ ul.nav li a.current{
 }
 
 #gear {
+  margin: 10px;
+  padding: 20px;
+  border-top: 2px solid black;
 }
 
 #gearLeft {
