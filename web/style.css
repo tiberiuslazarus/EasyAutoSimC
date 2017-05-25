@@ -22,6 +22,7 @@ body {
   left: 300px;
   width: 1500px;
   margin: 10px;
+  top: 20%;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -77,6 +78,13 @@ ul.nav li a.current{
 
 #content {
   width: 100%;
+}
+
+.header {
+  color: #98002e;
+  font-weight: bold;
+  font-family: 'Ultra', sans-serif;
+  text-shadow: 0 2px #480015, 0 3px #777;
 }
 
 /* Tooltip container */
