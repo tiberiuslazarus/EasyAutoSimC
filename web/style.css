@@ -80,6 +80,13 @@ ul.nav li a.current{
   width: 100%;
 }
 
+.header {
+  color: #98002e;
+  font-weight: bold;
+  font-family: 'Ultra', sans-serif;
+  text-shadow: 0 2px #480015, 0 3px #777;
+}
+
 /* Tooltip container */
 .tooltip {
   position: relative;
