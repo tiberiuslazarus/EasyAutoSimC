@@ -14,7 +14,7 @@ import shutil
 
 smallestMetrics = ["dtps", "theck_meloree_index", "tmi"]
 minResultSize = 10
-iterationSequence = [10,100,500,5000,15000]
+iterationSequence = [10,100,500,5000,11]
 
 def getTopSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
 	topSims = getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric, statWeights))

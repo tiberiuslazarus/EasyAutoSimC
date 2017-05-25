@@ -60,9 +60,13 @@ def createIndex(topSims, profileName):
 				# topSim["configProfile"]["profilename"], topSim["fightStyle"]
 				# navString += "<li><a href='./%s/%s.html' target='content'>%s</a></li>" % (fightStyle, i+1, i+1)
 				navString += "<li class='tooltip'><a onclick=showResult('%s_%s')>%s</a><div class='tooltiptext'>%s: %s</div></li>" % (fightStyle, i+1, i+1, topSim["metric"], topSim[topSim["metric"]])
-				resultsString += "<div id='%s_%s' class='result'><div class='header'>Result #%s for %s</div><div class='metric'>%s %s</div>" % (
-					fightStyle, i+1, i+1, fightStyle, topSim["metric"].upper(), topSim[topSim["metric"]]
-				)
+				resultsString += """<div id='%s_%s' class='result'>
+					<div class='header name'>%s</div>
+					<div class='header metric'>%s %s on %s</div>
+					<div class='header rank'>Rank %s</div>
+					""" % (
+						fightStyle, i+1, profileName, topSim["metric"].upper(), topSim[topSim["metric"]], fightStyle, i+1
+					)
 				leftSlots = ["head", "neck", "shoulders", "back", "chest", "wrists"]
 				rightSlots = ["hands", "waist", "legs", "feet", "finger1", "finger2", "trinket1", "trinket2"]
 				leftDiv = "<div id='gearLeft'>"
@@ -83,7 +87,6 @@ def createIndex(topSims, profileName):
 				allGearIds = [item["id"] for item in parsedItems]
 
 				for item in parsedItems:
-					print(item)
 					slot = item["slot"]
 					link = "http://www.wowdb.com/items/"
 
