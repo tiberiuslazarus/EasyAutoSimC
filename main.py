@@ -59,14 +59,20 @@ def createIndex(topSims, profileName):
 				# <li><a onclick="loadTab('./results/<name>/<fightstyle>/1.html')">1</a></li>
 				# topSim["configProfile"]["profilename"], topSim["fightStyle"]
 				# navString += "<li><a href='./%s/%s.html' target='content'>%s</a></li>" % (fightStyle, i+1, i+1)
-				navString += "<li class='tooltip'><a onclick=showResult('%s_%s')>%s</a><div class='tooltiptext'>%s: %s</div></li>" % (fightStyle, i+1, i+1, topSim["metric"], topSim[topSim["metric"]])
+				navString += "<li class='tooltip'><a onclick=\"showResult('%s_%s')\">%s</a><div class='tooltiptext'>%s: %s</div></li>" % (fightStyle, i+1, i+1, topSim["metric"], topSim[topSim["metric"]])
+
 				resultsString += """<div id='%s_%s' class='result'>
 					<div class='header name'>%s</div>
 					<div class='header metric'>%s %s on %s</div>
 					<div class='header rank'>Rank %s</div>
+					<div class='header talents'>Talents: %s</div>
+					<div class='header skill'>Player Skill: %s</div>
 					""" % (
-						fightStyle, i+1, profileName, topSim["metric"].upper(), topSim[topSim["metric"]], fightStyle, i+1
+						fightStyle, i+1, profileName, topSim["metric"].upper(), topSim[topSim["metric"]], fightStyle, i+1, topSim["configProfile"]["talentset"], topSim["configProfile"]["skill"]
 					)
+
+				# resultsString += "<div class='debug'>%s</div>" % topSim
+
 				leftSlots = ["head", "neck", "shoulders", "back", "chest", "wrists"]
 				rightSlots = ["hands", "waist", "legs", "feet", "finger1", "finger2", "trinket1", "trinket2"]
 				leftDiv = "<div id='gearLeft'>"
@@ -99,7 +105,7 @@ def createIndex(topSims, profileName):
 						wowdbItem += "&amp;enchantment=%s" % (item["enchant_id"].replace("/", ","))
 
 					wowdbUrl = "%s%s" % (link, wowdbItem)
-					link = "<a href='%s' data-tooltip-href='%s'>%s</a>" % (wowdbUrl, wowdbUrl, item["id"])
+					link = "<a href='%s' data-tooltip-href='%s' rel='item=%s'>%s</a>" % (wowdbUrl, wowdbUrl, item["id"], item["id"])
 
 					divContents = "<div class='gear %s'><div class='slot'>%s</div><div class='item'>%s</div></div>" % (slot, slot.upper(), link)
 					if item["id"] == "0":
