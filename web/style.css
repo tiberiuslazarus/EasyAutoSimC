@@ -49,13 +49,13 @@ ul.nav h3 {
 ul.nav li {
   display:block;
   padding: 0;
-  height: 30px;
+  height: 35px;
   margin: 2px 0;
 }
 
 ul.nav li a {
   text-decoration:none;
-  height: 20px;
+  height: 25px;
   padding:5px;
   width:70px;
   background:#444f4c;
@@ -75,23 +75,6 @@ ul.nav li a.current{
    background:#afacaa;
 }
 
-#content {
-  width: 100%;
-}
-
-.header {
-  color: #98002e;
-  font-weight: bold;
-  font-family: 'Ultra', sans-serif;
-  text-shadow: 0 2px #480015, 0 3px #777;
-  display: inline-block;
-  margin: 10px 20px;
-}
-
-.name, .metric {
-  display: block;
-}
-
 /* Tooltip container */
 .tooltip {
   position: relative;
@@ -102,7 +85,7 @@ ul.nav li a.current{
 /* Tooltip text */
 .tooltip .tooltiptext {
   visibility: hidden;
-  width: 120px;
+  width: 180px;
   background-color: #6c666f;
   color: #000;
   text-align: center;
@@ -119,6 +102,23 @@ ul.nav li a.current{
 /* Show the tooltip text when you mouse over the tooltip container */
 .tooltip:hover .tooltiptext {
     visibility: visible;
+}
+
+#content {
+  width: 100%;
+}
+
+.header {
+  color: #98002e;
+  font-weight: bold;
+  font-family: 'Ultra', sans-serif;
+  /*text-shadow: 0 2px #480015, 0 3px #777;*/
+  display: inline-block;
+  margin: 10px 20px;
+}
+
+.name, .metric {
+  display: block;
 }
 
 .result {
