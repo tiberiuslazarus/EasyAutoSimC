@@ -44,6 +44,8 @@ def moveHtmlOutputs(curFileName, newFileName):
 		print("ERROR: expected file (%s) does not exist. Cannot move to (%s)" % (curFileName, newFileName))
 
 def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
+	gearIterations = {}
+	print("Total size of gear: %s" % (len(gear)))
 	talentSets = profile["talents"].split(",")
 	topSims = []
 	maxthreads = int(maxthreads)
@@ -67,7 +69,13 @@ def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
 		if len(simInputs) <= minResultSize:
 			if not isLastIteration:
 				continue
+
+
 		for simInput in simInputs:
+			if hash(frozenset(simInput[1].items())) in gearIterations:
+				gearIterations[hash(frozenset(simInput[1].items()))].append(iterations)
+			else:
+				gearIterations[hash(frozenset(simInput[1].items()))] = [iterations]
 			simInput.append(iterations)
 
 		simResults = []
@@ -110,6 +118,16 @@ def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
 			simInputs = []
 			for simResult in bestSimResults:
 				simInputs.append([fightStyle, simResult["equippedGear"], simResult["configProfile"], metric, statWeights])
+
+	iterationsRun = 0
+	for gearHash, iterations in gearIterations.items():
+		iterationsRun += sum(iterations)
+
+	print("---Sim stats---")
+	print("Gear count: %s" % len(gearIterations))
+	print("Total iterations run: %s" % iterationsRun)
+	print("Iteration reduction vs running all gear at max iterations: %s%%" % (((max(iterationSequence)*len(gearIterations))-iterationsRun)/(max(iterationSequence)*len(gearIterations))*100))
+	print()
 
 	# All iterations done
 	bestSimResults = getBestSimResults(metric, simResults, minResults=True)
