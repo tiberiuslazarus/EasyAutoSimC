@@ -16,8 +16,8 @@ smallestMetrics = ["dtps", "theck_meloree_index", "tmi"]
 minResultSize = 10
 iterationSequence = [10,100,500,5000,15000]
 
-def getTopSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
-	topSims = getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric, statWeights))
+def getTopSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies):
+	topSims = getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies))
 
 	for i, topSim in enumerate(topSims):
 		outputDir = "results/%s/%s" % (topSim["configProfile"]["profilename"], topSim["fightStyle"])
@@ -27,7 +27,7 @@ def getTopSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
 		if not os.path.isfile(topSim["htmlOutput"]):
 			print("--Info: Temp html file for a top simming gear set no longer exists. Regenerating...")
 			newTopSim = runSim(topSim["fightStyle"], topSim["equippedGear"], topSim["configProfile"],
-				metric, statWeights, iterationSequence[len(iterationSequence)-1])
+				metric, statWeights, iterationSequence[len(iterationSequence)-1], enemies)
 			topSim = newTopSim
 
 		moveHtmlOutputs(topSim["htmlOutput"], newFileName)
@@ -43,7 +43,7 @@ def moveHtmlOutputs(curFileName, newFileName):
 	else:
 		print("ERROR: expected file (%s) does not exist. Cannot move to (%s)" % (curFileName, newFileName))
 
-def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
+def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies):
 	gearIterations = {}
 	print("Total size of gear: %s" % (len(gear)))
 	talentSets = profile["talents"].split(",")
@@ -58,7 +58,7 @@ def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
 			continue
 		profile["talentset"] = talentSet
 		for gearSet in gear:
-			simInputs.append([fightStyle, gearSet, dict(profile), metric, statWeights])
+			simInputs.append([fightStyle, gearSet, dict(profile), metric, statWeights, enemies])
 
 	print("%s Talent Sets * %s Gear Sets" % (len(talentSets), len(gear)))
 	print()
@@ -117,7 +117,7 @@ def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights):
 
 			simInputs = []
 			for simResult in bestSimResults:
-				simInputs.append([fightStyle, simResult["equippedGear"], simResult["configProfile"], metric, statWeights])
+				simInputs.append([fightStyle, simResult["equippedGear"], simResult["configProfile"], metric, statWeights, enemies])
 
 	iterationsRun = 0
 	for gearHash, iterations in gearIterations.items():
@@ -195,8 +195,8 @@ def runSimsMultiThread(simInputs, maxthreads):
 		pool.join()
 	return simDicts
 
-def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, iterations):
-	simProfile = generateGearProfile("easc", equippedGear, configProfile)
+def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies, iterations):
+	simProfile = generateGearProfile("easc", equippedGear, configProfile, enemies)
 
 	simcCall = ["simcraft/simc.exe", "threads=1", "fight_style=%s" % fightStyle, "iterations=%s" % iterations]
 	simcCall.extend(simProfile)
@@ -212,6 +212,7 @@ def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, iterati
 			if metric == "tmi":
 				simcCall.append("scale_over=tmi")
 
+	# print(simcCall)
 	simcOutput = subprocess.check_output(simcCall, stderr=subprocess.DEVNULL).decode("utf-8")
 
 	analysisResult = processOutput(simcOutput, metric)
