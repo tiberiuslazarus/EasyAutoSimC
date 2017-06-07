@@ -22,12 +22,16 @@ def main():
 
 	metric = config["Sim"]["metric"]
 	statWeights = config["Sim"]["statWeights"]
+	if "enemies" in config["Sim"]:
+		enemies = config["Sim"]["enemies"]
+	else:
+		enemies = None
 	htmlOutputs = {}
 	topSims = {}
 
 	for fightStyle in config["Sim"]["fightstyle"].split(","):
 		simInputs = []
-		topSims[fightStyle] = getTopSims(fightStyle, generatedGear["valid"], config["Profile"], config["Sim"]["maxthreads"], metric, statWeights)
+		topSims[fightStyle] = getTopSims(fightStyle, generatedGear["valid"], config["Profile"], config["Sim"]["maxthreads"], metric, statWeights, enemies)
 
 	indexName = createIndex(topSims, config["Profile"]["profilename"])
 
@@ -164,6 +168,18 @@ def loadConfig():
 	if not config.has_option("Sim", "fightstyle"):
 		config["Sim"]["fightstyle"] = "Patchwerk"
 		print("INFO: Defaulting fightstyle to %s." % config["Sim"]["fightstyle"])
+	else:
+		print(config["Sim"]["fightstyle"])
+		config["Sim"]["fightstyle"] = config["Sim"]["fightstyle"].replace(" ", "")
+		print(config["Sim"]["fightstyle"])
+
+	if config.has_option("Sim", "enemies"):
+		try:
+			if int(config["Sim"]["enemies"]) <= 0 :
+				print("WARN: Skill option not a valid number greater than 0. Defaulting to 1.")
+		except Exception:
+			config["Sim"]["enemies"] = "1"
+			print("WARN: Enemies option not a valid number. Defaulting to 1.")
 
 	if not config.has_option("Sim", "metric"):
 		config["Sim"]["metric"] = "dps"
@@ -201,6 +217,9 @@ def loadConfig():
 		if config["Profile"]["talents"].lower() == "all":
 			config["Profile"]["talents"] = allTalents()
 		else:
+			print(config["Profile"]["talents"])
+			config["Profile"]["talents"] = config["Profile"]["talents"].replace(" ", "")
+			print(config["Profile"]["talents"])
 			for talent in config["Profile"]["talents"].split(","):
 				if len(talent) != 7 or not talent.isnumeric() or len([x for x in talent if (not x.isdigit() or int(x) not in [1,2,3])]) != 0:
 					print("Invalid talents supplied: %s" % (config["Profile"]["talents"]))

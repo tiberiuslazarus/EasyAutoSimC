@@ -43,6 +43,16 @@ Fight styles can be configured and the top 5 dps for each fight style will be ou
 fightstyle=HelterSkelter,Patchwerk,HecticAddCleave,Ultraxion,Beastlord
 ```
 
+### Enemies
+
+Set number of enemies to sim against. This will likely have weird impact on non-Patchwerk fights.
+
+```
+[Sim]
+enemies=2
+```
+
+
 ### Talents
 
 Talent sets can be defined in your profile file. All fight styles will be simmed with all available talent sets. The top combinations of gear and talents will be returned.

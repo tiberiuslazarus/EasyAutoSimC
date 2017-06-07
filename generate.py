@@ -82,7 +82,7 @@ def iterateGear(gearOptions):
 
 ### Function to generate a simc profile ###
 
-def generateGearProfile(outputFileName, equippedGear, configProfile):
+def generateGearProfile(outputFileName, equippedGear, configProfile, enemies):
 	gearProfile = []
 	gearProfile.append("%s=%s_%s" % (configProfile["class"], configProfile["profilename"], outputFileName))
 	gearProfile.append("specialization=%s" % (configProfile["spec"]))
@@ -98,21 +98,13 @@ def generateGearProfile(outputFileName, equippedGear, configProfile):
 		if gear != "":
 			gearProfile.append("%s=%s" % (slot, (gear if gear[0]!="L" else gear[1:])))
 
+	try:
+		for i in range(int(enemies)):
+			gearProfile.append("enemy=enemy_%s" % i)
+	except:
+		pass
+
 	return gearProfile
-
-
-def generateGearProfileOld(outputFile, equippedGear, configProfile):
-	outputFile.write("%s=%s_%s\n" % (configProfile["class"], configProfile["profilename"], outputFile.name))
-	outputFile.write("specialization=%s\n" % (configProfile["spec"]))
-	outputFile.write("race=%s\n" % (configProfile["race"]))
-	outputFile.write("level=%s\n" % (configProfile["level"]))
-	outputFile.write("role=%s\n" % (configProfile["role"]))
-	outputFile.write("position=%s\n" % (configProfile["position"]))
-	outputFile.write("talents=%s\n" % (configProfile["talents"]))
-	outputFile.write("artifact=%s\n" % (configProfile["artifact"]))
-
-	for slot, gear in equippedGear.items():
-		outputFile.write("%s=%s\n" % (slot, (gear if gear[0]!="L" else gear[1:])))
 
 #check if permutation is valid
 def usable(equippedGear):
@@ -131,6 +123,3 @@ def usable(equippedGear):
 		return False
 	else:
 		return True
-
-def getProfileIdStr(profilename, profileId):
-	return "%s_%s" % (profilename, str(profileId).zfill(6))
