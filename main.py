@@ -23,12 +23,16 @@ def main():
 
 	metric = config["Sim"]["metric"]
 	statWeights = config["Sim"]["statWeights"]
+	if "enemies" in config["Sim"]:
+		enemiesList = config["Sim"]["enemies"].split(",")
+	else:
+		enemiesList = [None]
 	htmlOutputs = {}
 	topSims = {}
 
 	for fightStyle in config["Sim"]["fightstyle"].split(","):
 		topSims[fightStyle] = {}
-		for enemies in config["Sim"]["enemies"].split(","):
+		for enemies in enemiesList:
 			if enemies != None:
 				print("---Simming %s with %s enemies---" % (fightStyle, enemies))
 			else:
@@ -183,12 +187,10 @@ def loadConfig():
 			try:
 				if int(enemies) <= 0:
 					print("WARN: Skill option not a valid number greater than 0. Defaulting to unspecified.")
-					config["Sim"]["enemies"] = None
+					config.remove_option("Sim","enemies")
 			except Exception:
 				print("WARN: Enemies option not a valid number. Defaulting to unspecified.")
-				config["Sim"]["enemies"] = None
-	else:
-		config["Sim"]["enemies"] = None
+				config.remove_option("Sim","enemies")
 
 	if not config.has_option("Sim", "metric"):
 		config["Sim"]["metric"] = "dps"
