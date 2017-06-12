@@ -13,9 +13,6 @@ def processOutput(simcOutput, metric):
 			return (float(vals[0]), float(vals[1]))
 
 	print("WARN: Metric not found in simc output. This is weird...")
-	# print("WARN: Simc Output")
-	# print(simcOutput)
-	# print("WARN: End Simc Output")
 	return (0,0)
 
 def processFileJson(outputFile, metric):

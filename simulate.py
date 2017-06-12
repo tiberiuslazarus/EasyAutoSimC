@@ -14,7 +14,7 @@ import shutil
 
 smallestMetrics = ["dtps", "theck_meloree_index", "tmi"]
 minResultSize = 10
-iterationSequence = [10,100,500,5000,11]
+iterationSequence = [10,100,500,5000,15000]
 
 def getTopSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies):
 	topSims = getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies))
@@ -212,7 +212,6 @@ def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies
 			if metric == "tmi":
 				simcCall.append("scale_over=tmi")
 
-	# print(simcCall)
 	simcOutput = subprocess.check_output(simcCall, stderr=subprocess.DEVNULL).decode("utf-8")
 
 	analysisResult = processOutput(simcOutput, metric)
@@ -230,7 +229,6 @@ def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies
 
 	return simDict
 
-# def printProgressBar(completed, totalSize, stageTime, totalIterationTime, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█'):
 def printProgressBar(completed, totalSize, stageTime, totalIterationTime, prefix = '', suffix = '', decimals = 1, length = 50, fill = '|'):
 	percent = ("{0:." + str(decimals) + "f}").format(100 * (completed / float(totalSize)))
 

@@ -68,9 +68,6 @@ def createIndex(topSims, profileName):
 				else:
 					navString += "<ul id='%s' class='nav'><h3>%s</h3>" % (fightStyle, fightStyle)
 				for i, topSim in enumerate(fightTopSims):
-					# <li><a onclick="loadTab('./results/<name>/<fightstyle>/1.html')">1</a></li>
-					# topSim["configProfile"]["profilename"], topSim["fightStyle"]
-					# navString += "<li><a href='./%s/%s.html' target='content'>%s</a></li>" % (fightStyle, i+1, i+1)
 					navString += "<li class='tooltip'><a onclick=\"showResult('%s_%s_%s')\">%s</a><div class='tooltiptext'>%s: %s</div></li>" % (fightStyle, i+1, enemies, i+1, topSim["metric"], topSim[topSim["metric"]])
 
 					resultsString += """<div id='%s_%s_%s' class='result'>
@@ -83,8 +80,6 @@ def createIndex(topSims, profileName):
 						""" % (
 							fightStyle, i+1, enemies, profileName, topSim["metric"].upper(), topSim[topSim["metric"]], fightStyle, i+1, topSim["configProfile"]["talentset"], topSim["configProfile"]["skill"], topSim["enemies"]
 						)
-
-					# resultsString += "<div class='debug'>%s</div>" % topSim
 
 					leftSlots = ["head", "neck", "shoulders", "back", "chest", "wrists"]
 					rightSlots = ["hands", "waist", "legs", "feet", "finger1", "finger2", "trinket1", "trinket2"]

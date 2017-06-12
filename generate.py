@@ -80,8 +80,6 @@ def iterateGear(gearOptions):
 
 	return gearProfiles
 
-### Function to generate a simc profile ###
-
 def generateGearProfile(outputFileName, equippedGear, configProfile, enemies):
 	gearProfile = []
 	gearProfile.append("%s=%s_%s" % (configProfile["class"], configProfile["profilename"], outputFileName))
@@ -106,9 +104,7 @@ def generateGearProfile(outputFileName, equippedGear, configProfile, enemies):
 
 	return gearProfile
 
-#check if permutation is valid
 def usable(equippedGear):
-	# print(equippedGear)
 	legmax=2
 	nbLeg=0
 
