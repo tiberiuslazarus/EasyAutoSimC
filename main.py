@@ -8,6 +8,7 @@ import time
 import tempfile
 import urllib.request
 import webbrowser
+import datetime
 
 def main():
 	checkVersion()
@@ -22,16 +23,18 @@ def main():
 
 	metric = config["Sim"]["metric"]
 	statWeights = config["Sim"]["statWeights"]
-	if "enemies" in config["Sim"]:
-		enemies = config["Sim"]["enemies"]
-	else:
-		enemies = None
 	htmlOutputs = {}
 	topSims = {}
 
 	for fightStyle in config["Sim"]["fightstyle"].split(","):
-		simInputs = []
-		topSims[fightStyle] = getTopSims(fightStyle, generatedGear["valid"], config["Profile"], config["Sim"]["maxthreads"], metric, statWeights, enemies)
+		topSims[fightStyle] = {}
+		for enemies in config["Sim"]["enemies"].split(","):
+			if enemies != None:
+				print("---Simming %s with %s enemies---" % (fightStyle, enemies))
+			else:
+				print("---Simming %s---" % fightStyle)
+			simInputs = []
+			topSims[fightStyle][enemies] = getTopSims(fightStyle, generatedGear["valid"], config["Profile"], config["Sim"]["maxthreads"], metric, statWeights, enemies)
 
 	indexName = createIndex(topSims, config["Profile"]["profilename"])
 
@@ -40,96 +43,102 @@ def main():
 		print("\tFile \"D:\ExtraAutoSimCMaster\main.py\", line 34, in main")
 		print("---ERROR: Have you tried getting good?")
 
-	for fightStyle, fightTopSims in topSims.items():
-		print("---Best %s %s for %s results available at: %s---" % (len(fightTopSims), metric, fightStyle, indexName))
-		for i in range(len(fightTopSims)):
-			print("%s: %s (%s +/- %s) (Talents: %s)" %
-			 (i+1, fightTopSims[i]["htmlOutput"],
-			  "{:.1f}".format(fightTopSims[i][metric]),
-			  "{:.1f}".format(fightTopSims[i]["error"]),
-			  fightTopSims[i]["configProfile"]["talentset"]))
+	for fightStyle, enemiesFightTopSims in topSims.items():
+		for enemies, fightTopSims in enemiesFightTopSims.items():
+			print("---Best %s %s for %s %s results available at: %s---" % (len(fightTopSims), metric, fightStyle, enemies, indexName))
+			for i in range(len(fightTopSims)):
+				print("%s: %s (%s +/- %s) (Talents: %s)" %
+				 (i+1, fightTopSims[i]["htmlOutput"],
+				  "{:.1f}".format(fightTopSims[i][metric]),
+				  "{:.1f}".format(fightTopSims[i]["error"]),
+				  fightTopSims[i]["configProfile"]["talentset"]))
 		print("-------")
 		print()
 	webbrowser.open("%s/%s" % (os.getcwd(), indexName))
 
 def createIndex(topSims, profileName):
-	outputIndexName = 'results/%s/results.html' % profileName
+	outputIndexName = 'results/%s/results_%s.html' % (profileName, datetime.datetime.now().strftime("%y%m%d%H%M"))
 	with open('web/index.template.html') as indexTemplate:
 		navString = ""
 		resultsString = ""
-		for fightStyle, fightTopSims in topSims.items():
-			navString += "<ul id='%s' class='nav'><h3>%s</h3>" % (fightStyle, fightStyle)
-			for i, topSim in enumerate(fightTopSims):
-				# <li><a onclick="loadTab('./results/<name>/<fightstyle>/1.html')">1</a></li>
-				# topSim["configProfile"]["profilename"], topSim["fightStyle"]
-				# navString += "<li><a href='./%s/%s.html' target='content'>%s</a></li>" % (fightStyle, i+1, i+1)
-				navString += "<li class='tooltip'><a onclick=\"showResult('%s_%s')\">%s</a><div class='tooltiptext'>%s: %s</div></li>" % (fightStyle, i+1, i+1, topSim["metric"], topSim[topSim["metric"]])
+		for fightStyle, enemiesFightTopSims in topSims.items():
+			for enemies, fightTopSims in enemiesFightTopSims.items():
+				if enemies != None:
+					navString += "<ul id='%s_%s' class='nav'><h3>%s <div>(%s Enemies)</div></h3>" % (fightStyle, enemies, fightStyle, enemies)
+				else:
+					navString += "<ul id='%s' class='nav'><h3>%s</h3>" % (fightStyle, fightStyle)
+				for i, topSim in enumerate(fightTopSims):
+					# <li><a onclick="loadTab('./results/<name>/<fightstyle>/1.html')">1</a></li>
+					# topSim["configProfile"]["profilename"], topSim["fightStyle"]
+					# navString += "<li><a href='./%s/%s.html' target='content'>%s</a></li>" % (fightStyle, i+1, i+1)
+					navString += "<li class='tooltip'><a onclick=\"showResult('%s_%s_%s')\">%s</a><div class='tooltiptext'>%s: %s</div></li>" % (fightStyle, i+1, enemies, i+1, topSim["metric"], topSim[topSim["metric"]])
 
-				resultsString += """<div id='%s_%s' class='result'>
-					<div class='header name'>%s</div>
-					<div class='header metric'>%s %s on %s</div>
-					<div class='header rank'>Rank %s</div>
-					<div class='header talents'>Talents: %s</div>
-					<div class='header skill'>Player Skill: %s</div>
-					""" % (
-						fightStyle, i+1, profileName, topSim["metric"].upper(), topSim[topSim["metric"]], fightStyle, i+1, topSim["configProfile"]["talentset"], topSim["configProfile"]["skill"]
-					)
+					resultsString += """<div id='%s_%s_%s' class='result'>
+						<div class='header name'>%s</div>
+						<div class='header metric'>%s %s on %s</div>
+						<div class='header rank'>Rank %s</div>
+						<div class='header talents'>Talents: %s</div>
+						<div class='header skill'>Player Skill: %s</div>
+						<div class='header enemies'>Enemy count: %s</div>
+						""" % (
+							fightStyle, i+1, enemies, profileName, topSim["metric"].upper(), topSim[topSim["metric"]], fightStyle, i+1, topSim["configProfile"]["talentset"], topSim["configProfile"]["skill"], topSim["enemies"]
+						)
 
-				# resultsString += "<div class='debug'>%s</div>" % topSim
+					# resultsString += "<div class='debug'>%s</div>" % topSim
 
-				leftSlots = ["head", "neck", "shoulders", "back", "chest", "wrists"]
-				rightSlots = ["hands", "waist", "legs", "feet", "finger1", "finger2", "trinket1", "trinket2"]
-				leftDiv = "<div id='gearLeft'>"
-				rightDiv = "<div id='gearRight'>"
-				weaponDiv = "<div id='gearWeapon'>"
+					leftSlots = ["head", "neck", "shoulders", "back", "chest", "wrists"]
+					rightSlots = ["hands", "waist", "legs", "feet", "finger1", "finger2", "trinket1", "trinket2"]
+					leftDiv = "<div id='gearLeft'>"
+					rightDiv = "<div id='gearRight'>"
+					weaponDiv = "<div id='gearWeapon'>"
 
-				parsedItems = []
-				for slot, item in topSim["equippedGear"].items():
-					itemDict = {"slot": slot}
-					for itemProperty in item.split(","):
-						if "=" in itemProperty:
-							prop = itemProperty.split("=")
-							itemDict[prop[0]] = prop[1]
-					if "id" not in itemDict:
-						itemDict["id"] = "0"
-					parsedItems.append(itemDict)
+					parsedItems = []
+					for slot, item in topSim["equippedGear"].items():
+						itemDict = {"slot": slot}
+						for itemProperty in item.split(","):
+							if "=" in itemProperty:
+								prop = itemProperty.split("=")
+								itemDict[prop[0]] = prop[1]
+						if "id" not in itemDict:
+							itemDict["id"] = "0"
+						parsedItems.append(itemDict)
 
-				allGearIds = [item["id"] for item in parsedItems]
+					allGearIds = [item["id"] for item in parsedItems]
 
-				for item in parsedItems:
-					slot = item["slot"]
-					link = "http://www.wowdb.com/items/"
+					for item in parsedItems:
+						slot = item["slot"]
+						link = "http://www.wowdb.com/items/"
 
-					wowdbItem = "%s?setPieces=%s" % (item["id"], ",".join(allGearIds))
-					if "bonus_id" in item:
-						wowdbItem += "&amp;bonusIDs=%s" % (item["bonus_id"].replace("/", ","))
-					if "gem_id" in item:
-						wowdbItem += "&amp;gems=%s" % (item["gem_id"].replace("/", ","))
-					if "enchant_id" in item:
-						wowdbItem += "&amp;enchantment=%s" % (item["enchant_id"].replace("/", ","))
+						wowdbItem = "%s?setPieces=%s" % (item["id"], ",".join(allGearIds))
+						if "bonus_id" in item:
+							wowdbItem += "&amp;bonusIDs=%s" % (item["bonus_id"].replace("/", ","))
+						if "gem_id" in item:
+							wowdbItem += "&amp;gems=%s" % (item["gem_id"].replace("/", ","))
+						if "enchant_id" in item:
+							wowdbItem += "&amp;enchantment=%s" % (item["enchant_id"].replace("/", ","))
 
-					wowdbUrl = "%s%s" % (link, wowdbItem)
-					link = "<a href='%s' data-tooltip-href='%s' rel='item=%s'>%s</a>" % (wowdbUrl, wowdbUrl, item["id"], item["id"])
+						wowdbUrl = "%s%s" % (link, wowdbItem)
+						link = "<a href='%s' data-tooltip-href='%s' rel='item=%s'>%s</a>" % (wowdbUrl, wowdbUrl, item["id"], item["id"])
 
-					divContents = "<div class='gear %s'><div class='slot'>%s</div><div class='item'>%s</div></div>" % (slot, slot.upper(), link)
-					if item["id"] == "0":
-						divContents = "<div class='gear %s'><div class='slot'>%s</div><div class='item'>&nbsp;</div></div>" % (slot, slot.upper())
+						divContents = "<div class='gear %s'><div class='slot'>%s</div><div class='item'>%s</div></div>" % (slot, slot.upper(), link)
+						if item["id"] == "0":
+							divContents = "<div class='gear %s'><div class='slot'>%s</div><div class='item'>&nbsp;</div></div>" % (slot, slot.upper())
 
-					if slot in leftSlots:
-						leftDiv += divContents
-					elif slot in rightSlots:
-						rightDiv += divContents
-					else:
-						weaponDiv += divContents
-				leftDiv += "</div>"
-				rightDiv += "</div>"
-				weaponDiv += "</div>"
-				resultsString += "<div id='gear'>"
-				resultsString += leftDiv
-				resultsString += rightDiv
-				resultsString += weaponDiv
-				resultsString += "</div></div>"
-			navString += "</ul>"
+						if slot in leftSlots:
+							leftDiv += divContents
+						elif slot in rightSlots:
+							rightDiv += divContents
+						else:
+							weaponDiv += divContents
+					leftDiv += "</div>"
+					rightDiv += "</div>"
+					weaponDiv += "</div>"
+					resultsString += "<div id='gear'>"
+					resultsString += leftDiv
+					resultsString += rightDiv
+					resultsString += weaponDiv
+					resultsString += "</div></div>"
+				navString += "</ul>"
 		index = indexTemplate.read()
 		index = index.replace("$navString", navString)
 		index = index.replace("$resultsString", resultsString)
@@ -174,12 +183,17 @@ def loadConfig():
 		print(config["Sim"]["fightstyle"])
 
 	if config.has_option("Sim", "enemies"):
-		try:
-			if int(config["Sim"]["enemies"]) <= 0 :
-				print("WARN: Skill option not a valid number greater than 0. Defaulting to 1.")
-		except Exception:
-			config["Sim"]["enemies"] = "1"
-			print("WARN: Enemies option not a valid number. Defaulting to 1.")
+		config["Sim"]["enemies"] = config["Sim"]["enemies"].replace(" ", "")
+		for enemies in config["Sim"]["enemies"].split(","):
+			try:
+				if int(enemies) <= 0:
+					print("WARN: Skill option not a valid number greater than 0. Defaulting to unspecified.")
+					config["Sim"]["enemies"] = None
+			except Exception:
+				print("WARN: Enemies option not a valid number. Defaulting to unspecified.")
+				config["Sim"]["enemies"] = None
+	else:
+		config["Sim"]["enemies"] = None
 
 	if not config.has_option("Sim", "metric"):
 		config["Sim"]["metric"] = "dps"

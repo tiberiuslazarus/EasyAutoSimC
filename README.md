@@ -52,6 +52,10 @@ Set number of enemies to sim against. This will likely have weird impact on non-
 enemies=2
 ```
 
+```
+[Sim]
+enemies=1,2,3
+```
 
 ### Talents
 
