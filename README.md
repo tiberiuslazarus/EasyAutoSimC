@@ -10,7 +10,7 @@ Created to work in Python3 on Windows 64bit. It is likely possible to replace th
 
 ## SimC Verison
 
-simc-725-01-win64-12aa563.7z -- 2017-06-21 15:40
+simc-725-02-win64-f09531b.7z	2017-07-07 18:50
 
 
 ## Usage
