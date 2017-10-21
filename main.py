@@ -112,12 +112,9 @@ def createIndex(topSims, profileName):
 						if "bonus_id" in item:
 							wowHeadKey.append("bonus=%s" % item["bonus_id"])
 						if "gem_id" in item:
-							wowHeadKey.append("gems=%s" % item["gem_id"])
+							wowHeadKey.append("gems=%s" % item["gem_id"].replace("/", ":"))
 						if "enchant_id" in item:
 							wowHeadKey.append("ench=%s" % item["enchant_id"])
-						if "relic_id" in item:
-							wowHeadKey.append("rel=%s" % item["relic_id"])
-
 
 						url = "%s%s" % (link, "&".join(wowHeadKey))
 						link = "<a href='%s' rel='%s'>%s</a>" % (url, "&".join(wowHeadKey), item["id"])
