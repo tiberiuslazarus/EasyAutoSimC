@@ -5,12 +5,12 @@ System to generate gearing options from owned items for WoW characters and then 
 
 Created to work in Python3 on Windows 64bit. It is likely possible to replace the included simcraft/simc.exe file with a 32 bit. But that seems dumb.
 
-*** VERY EXPERIMENTAL. DO NOT MAKE ANY PERMANENT GEAR DECISIONS BASED ON THIS OUTPUT ***
+*** MOSTLY EXPERIMENTAL. DO NOT MAKE ANY PERMANENT GEAR DECISIONS BASED ON THIS OUTPUT ***
 
 
 ## SimC Verison
 
-simc-725-02-win64-f09531b.7z	2017-07-07 18:50
+simc-730-03-win64-3ef9ce682.7z	2017-10-11 18:51
 
 
 ## Usage

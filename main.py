@@ -106,18 +106,18 @@ def createIndex(topSims, profileName):
 
 					for item in parsedItems:
 						slot = item["slot"]
-						link = "http://www.wowdb.com/items/"
+						link = "http://www.wowhead.com/"
 
-						wowdbItem = "%s?setPieces=%s" % (item["id"], ",".join(allGearIds))
+						wowHeadKey = ["item=%s" % item["id"], "pcs=%s" % (":".join(allGearIds))]
 						if "bonus_id" in item:
-							wowdbItem += "&amp;bonusIDs=%s" % (item["bonus_id"].replace("/", ","))
+							wowHeadKey.append("bonus=%s" % item["bonus_id"])
 						if "gem_id" in item:
-							wowdbItem += "&amp;gems=%s" % (item["gem_id"].replace("/", ","))
+							wowHeadKey.append("gems=%s" % item["gem_id"].replace("/", ":"))
 						if "enchant_id" in item:
-							wowdbItem += "&amp;enchantment=%s" % (item["enchant_id"].replace("/", ","))
+							wowHeadKey.append("ench=%s" % item["enchant_id"])
 
-						wowdbUrl = "%s%s" % (link, wowdbItem)
-						link = "<a href='%s' data-tooltip-href='%s' rel='item=%s'>%s</a>" % (wowdbUrl, wowdbUrl, item["id"], item["id"])
+						url = "%s%s" % (link, "&".join(wowHeadKey))
+						link = "<a href='%s' rel='%s'>%s</a>" % (url, "&".join(wowHeadKey), item["id"])
 
 						divContents = "<div class='gear %s'><div class='slot'>%s</div><div class='item'>%s</div></div>" % (slot, slot.upper(), link)
 						if item["id"] == "0":
