@@ -15,6 +15,24 @@ def processOutput(simcOutput, metric):
 	print("WARN: Metric not found in simc output. This is weird...")
 	return (0,0)
 
+def getScaleFactors(simcOutput):
+	scaleFactorsFound = False
+	for line in simcOutput.split("\n"):
+		if scaleFactorsFound:
+			factors = line.split()
+			factorsDict = {}
+			for factor in factors:
+				if "=" in factor:
+					factorSplit = factor.split("=")
+					factorsDict[factorSplit[0]] = factorSplit[1].split("(")[0]
+				else:
+					factors.remove(factor)
+			return factorsDict
+		elif "Scale Factors:" in line:
+			scaleFactorsFound = True
+	return {}
+
+
 def processFileJson(outputFile, metric):
 	with open(outputFile.name, "r") as jsonFile:
 		try:

@@ -22,7 +22,7 @@ def main():
 	generatedGear = generateGear(config["Gear"])
 
 	metric = config["Sim"]["metric"]
-	statWeights = config["Sim"]["statWeights"]
+	statWeights = config["Sim"]["statweights"]
 	if "enemies" in config["Sim"]:
 		enemiesList = config["Sim"]["enemies"].split(",")
 	else:
@@ -129,14 +129,23 @@ def createIndex(topSims, profileName):
 							rightDiv += divContents
 						else:
 							weaponDiv += divContents
+					scaleFactors = ""
+					# for factor, value in sorted(topSim["scaleFactors"], key=topSim["scaleFactors"].__getitem__):
+					# for factor, value in sorted(topSim["scaleFactors"], key=lambda factor: value):
+					for scaleFactor in sorted(topSim["scaleFactors"].items(), key=lambda x:float(x[1]), reverse=True):
+						scaleFactors += "<div class='scale'><div class='scaleAttribute'>%s</div><div class='scaleValue'>%s</div></div>" % (scaleFactor[0], scaleFactor[1].replace("(", " ("))
 					leftDiv += "</div>"
 					rightDiv += "</div>"
 					weaponDiv += "</div>"
-					resultsString += "<div id='gear'>"
+					resultsString += "<div id='gear'><div class='header'>Gear</div>"
 					resultsString += leftDiv
 					resultsString += rightDiv
 					resultsString += weaponDiv
-					resultsString += "</div></div>"
+					resultsString += "</div>"
+					resultsString += "<div id='scaleFactors'><div class='header'>Scale Factors</div>"
+					resultsString += scaleFactors
+					resultsString += "</div>"
+					resultsString += "</div>\n"
 				navString += "</ul>"
 		index = indexTemplate.read()
 		index = index.replace("$navString", navString)
@@ -196,11 +205,11 @@ def loadConfig():
 		config["Sim"]["metric"] = "dps"
 		print("INFO: Defaulting to optimizing %s." % config["Sim"]["metric"])\
 
-	if not config.has_option("Sim", "statWeights"):
-		config["Sim"]["statWeights"] = "0"
+	if not config.has_option("Sim", "statweights"):
+		config["Sim"]["statweights"] = "0"
 		print("INFO: Defaulting to not calculating stat weights.")
-	elif config["Sim"]["statWeights"] != "0" or config["Sim"]["statWeights"] != "1":
-		config["Sim"]["statWeights"] = "0"
+	elif config["Sim"]["statweights"] != "0" and config["Sim"]["statweights"] != "1":
+		config["Sim"]["statweights"] = "0"
 		print("INFO: Invalid statweight option. Defaulting to not calculating stat weights.")
 
 	if not config.has_option("Profile", "skill"):

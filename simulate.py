@@ -216,6 +216,9 @@ def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies
 
 	analysisResult = processOutput(simcOutput, metric)
 
+	if statWeights == "1":
+		scaleFactors = getScaleFactors(simcOutput)
+
 	simDict = {
 		"equippedGear": equippedGear,
 		"fightStyle": fightStyle,
@@ -224,7 +227,8 @@ def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies
 		"metric": metric,
 		metric: analysisResult[0],
 		"error": analysisResult[1],
-		"enemies": enemies
+		"enemies": enemies,
+		"scaleFactors": scaleFactors
 	}
 
 	return simDict

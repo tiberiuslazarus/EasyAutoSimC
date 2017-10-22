@@ -1,0 +1,99 @@
+body {
+    font-size: 16px;
+    background-color: #e0e0e0;
+}
+
+label {
+    display: block;
+}
+
+input {
+    display: block;
+}
+
+div {
+    border: 1px black solid;
+}
+
+#container {
+    width: 90%;
+    margin: 5px auto;
+}
+
+#header {
+    margin: 10px;
+}
+
+#form {
+    margin: 10px;
+}
+
+#footer {
+    margin: 10px;
+}
+
+#basic {
+    width: 90%;
+    margin: 10px auto;
+}
+
+#basic .header {
+    border: none;
+    border-bottom: 2px black solid;
+}
+
+#advanced {
+    width: 90%;
+    margin: 10px auto;
+}
+
+#advanced .header {
+    border: none;
+    border-bottom: 2px black solid;
+}
+
+#submit {
+    margin: 5px auto;
+    width: 100px;
+}
+
+.header, label {
+    font-size: 20px;
+}
+
+.formField {
+    margin: 15px;
+}
+
+.formField textarea {
+    width: 70%;
+}
+
+input[type=text], textarea {
+    padding:5px;
+    border:2px solid #ccc; 
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+}
+
+input[type=text]:focus, textarea:focus {
+    border-color:#333;
+}
+
+input[type=submit] {
+    padding:2px 15px;
+    background:rgb(38, 168, 255); border:0 none;
+    cursor:pointer;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    font-size: 20px;
+    width: 100px;
+}
+
+input[type=submit]:hover {
+    padding:2px 15px;
+    background:rgb(27, 113, 170); border:0 none;
+    cursor:pointer;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+}
