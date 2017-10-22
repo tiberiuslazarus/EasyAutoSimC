@@ -110,7 +110,7 @@ def createIndex(topSims, profileName):
 
 						wowHeadKey = ["item=%s" % item["id"], "pcs=%s" % (":".join(allGearIds))]
 						if "bonus_id" in item:
-							wowHeadKey.append("bonus=%s" % item["bonus_id"])
+							wowHeadKey.append("bonus=%s" % item["bonus_id"].replace("/", ":"))
 						if "gem_id" in item:
 							wowHeadKey.append("gems=%s" % item["gem_id"].replace("/", ":"))
 						if "enchant_id" in item:

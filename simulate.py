@@ -254,7 +254,7 @@ def printProgressBar(completed, totalSize, stageTime, totalIterationTime, prefix
 		if estRemaining < 5:
 			m, s = divmod(remainingSeconds, 60)
 			print('\r%s <%s> %s%% %s (Estimated remaining time: %s:%s)' %
-				(prefix, bar, percent, suffix, "{0:02d}".format(int(m)), "{0:04.1f}".format(math.ceil(s))), end = '\r')
+				(prefix, bar, percent, suffix, "{0:02d}".format(int(m)), "{0:02.0f}".format(math.ceil(s))), end = '\r')
 		else:
 			print('\r%s <%s> %s%% %s (Estimated remaining time: %s %s)' %
 				(prefix, bar, percent, suffix, estRemaining, "minutes" if estRemaining != 1 else "minute"), end = '\r')
