@@ -129,11 +129,14 @@ def createIndex(topSims, profileName):
 							rightDiv += divContents
 						else:
 							weaponDiv += divContents
+
 					scaleFactors = ""
-					# for factor, value in sorted(topSim["scaleFactors"], key=topSim["scaleFactors"].__getitem__):
-					# for factor, value in sorted(topSim["scaleFactors"], key=lambda factor: value):
-					for scaleFactor in sorted(topSim["scaleFactors"].items(), key=lambda x:float(x[1]), reverse=True):
-						scaleFactors += "<div class='scale'><div class='scaleAttribute'>%s</div><div class='scaleValue'>%s</div></div>" % (scaleFactor[0], scaleFactor[1].replace("(", " ("))
+					if "scaleFactors" in topSim:
+						scaleFactors += "<div id='scaleFactors'><div class='header'>Scale Factors</div>"
+						for scaleFactor in sorted(topSim["scaleFactors"].items(), key=lambda x:float(x[1]), reverse=True):
+							scaleFactors += "<div class='scale'><div class='scaleAttribute'>%s</div><div class='scaleValue'>%s</div></div>" % (scaleFactor[0], scaleFactor[1].replace("(", " ("))
+						scaleFactors += "</div>"
+
 					leftDiv += "</div>"
 					rightDiv += "</div>"
 					weaponDiv += "</div>"
@@ -142,9 +145,7 @@ def createIndex(topSims, profileName):
 					resultsString += rightDiv
 					resultsString += weaponDiv
 					resultsString += "</div>"
-					resultsString += "<div id='scaleFactors'><div class='header'>Scale Factors</div>"
 					resultsString += scaleFactors
-					resultsString += "</div>"
 					resultsString += "</div>\n"
 				navString += "</ul>"
 		index = indexTemplate.read()

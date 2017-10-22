@@ -14,7 +14,7 @@ import shutil
 
 smallestMetrics = ["dtps", "theck_meloree_index", "tmi"]
 minResultSize = 10
-iterationSequence = [10,100,500,5000,15000]
+iterationSequence = [10,100,500,5000,15]
 
 def getTopSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies):
 	topSims = getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies))
@@ -202,7 +202,9 @@ def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies
 	simcCall.extend(simProfile)
 	outputFileHtml = None
 
-	if iterations == iterationSequence[len(iterationSequence)-1]:
+	isLastIteration = (iterations == iterationSequence[len(iterationSequence)-1])
+
+	if isLastIteration:
 		outputFileHtml = tempfile.NamedTemporaryFile(mode="w", suffix=".html", prefix="easc_", delete=False)
 		simcCall.append("html=%s" % outputFileHtml.name)
 
@@ -216,8 +218,6 @@ def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies
 
 	analysisResult = processOutput(simcOutput, metric)
 
-	if statWeights == "1":
-		scaleFactors = getScaleFactors(simcOutput)
 
 	simDict = {
 		"equippedGear": equippedGear,
@@ -227,9 +227,11 @@ def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies
 		"metric": metric,
 		metric: analysisResult[0],
 		"error": analysisResult[1],
-		"enemies": enemies,
-		"scaleFactors": scaleFactors
+		"enemies": enemies
 	}
+
+	if isLastIteration and statWeights == "1":
+		simDict["scaleFactors"] = getScaleFactors(simcOutput)
 
 	return simDict
 
