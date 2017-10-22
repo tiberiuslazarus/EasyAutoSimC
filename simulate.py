@@ -81,7 +81,7 @@ def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies)
 		simResults = []
 		iterationTime = 0
 		completedSims = 0
-		maxBatchSize = 10 if totalIterationGear < 100 else 100 if totalIterationGear < 3000 else 1000
+		maxBatchSize = 1 if isLastIteration else 10 if totalIterationGear < 100 else 100 if totalIterationGear < 3000 else 1000
 
 		print("Total size of run at %s iterations: %s" % (iterations, len(simInputs)))
 		print("Batch size of %s" % min(maxBatchSize, len(simInputs)))
@@ -97,10 +97,10 @@ def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies)
 			batchInputs = simInputs[:batchSize]
 			del simInputs[:batchSize]
 
-			if maxthreads > 1:
-				simResults.extend(runSimsMultiThread(batchInputs, maxthreads))
+			if isLastIteration:
+				simResults.extend(runSimsSingleWide(batchInputs, maxthreads))
 			else:
-				simResults.extend(runSimsSingleThread(batchInputs))
+				simResults.extend(runSimsMultiThread(batchInputs, maxthreads))
 
 			batchTime = (time.time() - batchStartTime)
 			completedSims += batchSize
@@ -167,9 +167,10 @@ def removeTempFile(tempFile):
 	except:
 		pass
 
-def runSimsSingleThread(simInputs):
+def runSimsSingleWide(simInputs, maxThreads):
 	simResults = []
 	for simInput in simInputs:
+		simInput.append(maxThreads)
 		simResults.append(runSim(*simInput))
 	return simResults
 
@@ -195,10 +196,10 @@ def runSimsMultiThread(simInputs, maxthreads):
 		pool.join()
 	return simDicts
 
-def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies, iterations):
+def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies, iterations, maxthreads="1"):
 	simProfile = generateGearProfile("easc", equippedGear, configProfile, enemies)
 
-	simcCall = ["simcraft/simc.exe", "threads=1", "fight_style=%s" % fightStyle, "iterations=%s" % iterations]
+	simcCall = ["simcraft/simc.exe", "threads=%s" % maxthreads, "fight_style=%s" % fightStyle, "iterations=%s" % iterations]
 	simcCall.extend(simProfile)
 	outputFileHtml = None
 
@@ -250,11 +251,10 @@ def printProgressBar(completed, totalSize, stageTime, totalIterationTime, prefix
 	if completed < totalSize:
 		remainingSeconds = (totalIterationTime/completed)*(totalSize-completed)
 		estRemaining = math.ceil(remainingSeconds/60)
-
-	if completed < totalSize:
-		if estRemaining == 1:
-			print('\r%s <%s> %s%% %s (Estimated remaining time: less than 1 minute)' %
-				(prefix, bar, percent, suffix), end = '\r')
+		if estRemaining < 5:
+			m, s = divmod(remainingSeconds, 60)
+			print('\r%s <%s> %s%% %s (Estimated remaining time: %s:%s)' %
+				(prefix, bar, percent, suffix, "{0:02d}".format(int(m)), "{0:04.1f}".format(math.ceil(s))), end = '\r')
 		else:
 			print('\r%s <%s> %s%% %s (Estimated remaining time: %s %s)' %
 				(prefix, bar, percent, suffix, estRemaining, "minutes" if estRemaining != 1 else "minute"), end = '\r')
