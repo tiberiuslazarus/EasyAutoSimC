@@ -1,0 +1,69 @@
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+
+    <body>
+        <div id="container">
+            <div id="header">
+                Header
+            </div>
+            <div id="form">
+                <form>
+                    <div id="basic">
+                        <div class="header">
+                            Basic Options
+                        </div>
+                        <div class="formField">
+                            <label for="metric">Metric</label>
+                            <select name="metric">
+                                <option value="dps">DPS</input>
+                                <option value="prioritydps">DPS to Priority Target(s)</input>
+                                <option value="hps">Healing Per Second</input>
+                                <option value="dtps">Damage Taken Per Second</input>
+                                <option value="tmi">Theck-Meloree Index</input>
+                            </select>
+                        </div>
+                        <div class="formField">
+                            <label for="autosimc">AutoSimC Data Export</label>
+                            <textarea id="autosimc" name="autosimc"></textarea>
+                        </div>
+                    </div>
+                    <div id="advanced">
+                        <div class="header">
+                            Advanced Options
+                        </div>
+                        <div class="formField">
+                            <label for="fightStyles">Fight Style</label>
+                            <select name="fightStyle">
+                                <option value="Patchwerk">Patchwerk</option>
+                                <option value="HelterSkelter">Helter Skelter</option>
+                                <option value="HecticAddCleave">Hectic Add Cleave</option>
+                                <option value="Ultraxion">Ultraxion</option>
+                                <option value="Beastlord">Beastlord</option>
+                            </select>
+                        </div>
+                        <div class="formField">
+                            <label for="enemies">Enemies</label>
+                            <select name="enemies">
+                                <option value=1>1</input>
+                                <option value=2>2</input>
+                                <option value=3>3</input>
+                            </select>
+                        </div>
+                        <div class="formField">
+                            <label for="talents">Talents</label>
+                            <input type="text" id="talents" name="talents"></input>
+                        </div>
+                    </div>
+                    <div id="submit">
+                        <input type="submit" value="Submit" />
+                    </div>
+                </form>
+            </div>
+            <div id="footer">
+                Footer
+            <div>
+        </div>
+    </body>
+</html>
