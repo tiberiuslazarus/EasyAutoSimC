@@ -5,14 +5,12 @@ from analyze import *
 import configparser
 import sys
 import time
-import tempfile
 import urllib.request
 import webbrowser
 import datetime
 
 def main():
 	checkVersion()
-	cleanTempDir()
 	config = loadConfig()
 	print("Performing gear comparisons for %s on Fight Styles: %s" % (config["Profile"]["profilename"], config["Sim"]["fightstyle"]))
 	print("Simming at player skill level: %s%%" % config["Profile"]["skill"])
@@ -27,7 +25,6 @@ def main():
 		enemiesList = config["Sim"]["enemies"].split(",")
 	else:
 		enemiesList = [None]
-	htmlOutputs = {}
 	topSims = {}
 
 	for fightStyle in config["Sim"]["fightstyle"].split(","):
@@ -44,10 +41,10 @@ def main():
 
 	for fightStyle, enemiesFightTopSims in topSims.items():
 		for enemies, fightTopSims in enemiesFightTopSims.items():
-			print("---Best %s %s for %s %s results available at: %s---" % (len(fightTopSims), metric, fightStyle, enemies, indexName))
+			print("---Best %s %s for %s results available at: %s---" % (len(fightTopSims), metric, fightStyle, indexName))
 			for i in range(len(fightTopSims)):
-				print("%s: %s (%s +/- %s) (Talents: %s)" %
-				 (i+1, fightTopSims[i]["htmlOutput"],
+				print("%s: %s +/- %s (Talents: %s)" %
+				 (i+1,
 				  "{:.1f}".format(fightTopSims[i][metric]),
 				  "{:.1f}".format(fightTopSims[i]["error"]),
 				  fightTopSims[i]["configProfile"]["talentset"]))
@@ -127,7 +124,7 @@ def createIndex(topSims, profileName):
 
 					scaleFactors = ""
 					if "scaleFactors" in topSim:
-						scaleFactors += "<div id='scaleFactors'><div class='header'>Scale Factors</div>"
+						scaleFactors += "<div id='scaleFactors'><div class='header'>Stat Weights</div>"
 						for scaleFactor in sorted(topSim["scaleFactors"].items(), key=lambda x:float(x[1]), reverse=True):
 							scaleFactors += "<div class='scale'><div class='scaleAttribute'>%s</div><div class='scaleValue'>%s</div></div>" % (scaleFactor[0], scaleFactor[1].replace("(", " ("))
 						scaleFactors += "</div>"
@@ -273,17 +270,6 @@ def allTalents():
 							for g in range(1,4):
 								talents += "%s%s%s%s%s%s%s," % (a,b,c,d,e,f,g)
 	return talents[:-1]
-
-def cleanTempDir():
-	print("Cleaning temporary directory")
-	with os.scandir(tempfile.gettempdir()) as tempDir:
-		for entry in tempDir:
-			if entry.is_file() and (entry.name.startswith("easc_") or (entry.name.endswith('.html') or entry.name.endswith('.json') or entry.name.endswith('.simc'))):
-				try:
-					os.remove(entry)
-				except:
-					pass
-	print("Done cleaning temporary directory")
 
 def checkVersion():
 	try:

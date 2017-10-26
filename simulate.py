@@ -6,7 +6,6 @@ import subprocess
 import os
 from analyze import *
 from generate import generateGearProfile
-import tempfile
 import traceback
 import math
 import itertools
@@ -17,31 +16,7 @@ minResultSize = 10
 iterationSequence = [10,100,500,5000,15000]
 
 def getTopSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies):
-	topSims = getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies))
-
-	for i, topSim in enumerate(topSims):
-		outputDir = "results/%s/%s" % (topSim["configProfile"]["profilename"], topSim["fightStyle"])
-		newFileName = "%s/%s.html" % (outputDir, i+1)
-		if not os.path.exists(outputDir):
-			os.makedirs(os.path.dirname(os.path.abspath(newFileName)))
-		if not os.path.isfile(topSim["htmlOutput"]):
-			print("--Info: Temp html file for a top simming gear set no longer exists. Regenerating...")
-			newTopSim = runSim(topSim["fightStyle"], topSim["equippedGear"], topSim["configProfile"],
-				metric, statWeights, iterationSequence[len(iterationSequence)-1], topSim["enemies"])
-			topSim = newTopSim
-
-		moveHtmlOutputs(topSim["htmlOutput"], newFileName)
-		topSim["htmlOutput"] = newFileName
-
-	return topSims
-
-def moveHtmlOutputs(curFileName, newFileName):
-	if not os.path.exists(os.path.dirname(os.path.abspath(newFileName))):
-		os.makedirs(os.path.dirname(os.path.abspath(newFileName)))
-	if os.path.isfile(curFileName):
-		shutil.move(curFileName, newFileName)
-	else:
-		print("ERROR: expected file (%s) does not exist. Cannot move to (%s)" % (curFileName, newFileName))
+	return getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies))
 
 def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies):
 	gearIterations = {}
@@ -112,8 +87,6 @@ def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies)
 		if not isLastIteration:
 			totalSimTime += iterationTime
 			bestSimResults = getBestSimResults(metric, simResults)
-			for removedSimResult in list(itertools.filterfalse(lambda x: x in bestSimResults, simResults)):
-				removeTempFile(removedSimResult["htmlOutput"])
 
 			simInputs = []
 			for simResult in bestSimResults:
@@ -131,9 +104,6 @@ def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies)
 
 	# All iterations done
 	bestSimResults = getBestSimResults(metric, simResults, minResults=True)
-
-	for removedSimResult in list(itertools.filterfalse(lambda x: x in bestSimResults, simResults)):
-		removeTempFile(removedSimResult["htmlOutput"])
 
 	return bestSimResults
 
@@ -160,12 +130,6 @@ def getBestSimResults(metric, simResults, minResults=None):
 		bestSimResults = tempBestResults
 
 	return bestSimResults
-
-def removeTempFile(tempFile):
-	try:
-		os.remove(tempFile)
-	except:
-		pass
 
 def runSimsSingleWide(simInputs, maxThreads):
 	simResults = []
@@ -201,14 +165,10 @@ def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies
 
 	simcCall = ["simcraft/simc.exe", "threads=%s" % maxthreads, "fight_style=%s" % fightStyle, "iterations=%s" % iterations]
 	simcCall.extend(simProfile)
-	outputFileHtml = None
 
 	isLastIteration = (iterations == iterationSequence[len(iterationSequence)-1])
 
 	if isLastIteration:
-		outputFileHtml = tempfile.NamedTemporaryFile(mode="w", suffix=".html", prefix="easc_", delete=False)
-		simcCall.append("html=%s" % outputFileHtml.name)
-
 		if statWeights != "0":
 			simcCall.append("calculate_scale_factors=1")
 
@@ -224,7 +184,6 @@ def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies
 		"equippedGear": equippedGear,
 		"fightStyle": fightStyle,
 		"configProfile": configProfile,
-		"htmlOutput": (outputFileHtml.name if outputFileHtml else ""),
 		"metric": metric,
 		metric: analysisResult[0],
 		"error": analysisResult[1],
@@ -255,13 +214,13 @@ def printProgressBar(completed, totalSize, stageTime, totalIterationTime, prefix
 		estRemaining = math.ceil(remainingSeconds/60)
 		if estRemaining < 5:
 			m, s = divmod(remainingSeconds, 60)
-			print('\r%s <%s> %s%% %s (Estimated remaining time: %s:%s)' %
+			print('\r%s <%s> %s%% %s (Estimated remaining time: %s:%s)      ' %
 				(prefix, bar, percent, suffix, "{0:02d}".format(int(m)), "{0:02.0f}".format(math.ceil(s))), end = '\r')
 		else:
-			print('\r%s <%s> %s%% %s (Estimated remaining time: %s %s)' %
+			print('\r%s <%s> %s%% %s (Estimated remaining time: %s %s)      ' %
 				(prefix, bar, percent, suffix, estRemaining, "minutes" if estRemaining != 1 else "minute"), end = '\r')
 	else:
 		m, s = divmod(totalIterationTime, 60)
-		print('\r%s <%s> %s%% %s (Time taken: %s:%s)							   '
+		print('\r%s <%s> %s%% %s (Time taken: %s:%s)						           '
 			% (prefix, bar, percent, suffix, "{0:02d}".format(int(m)), "{0:04.1f}".format(s)))
 		print()
