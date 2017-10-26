@@ -231,8 +231,10 @@ def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies
 		"enemies": enemies
 	}
 
-	if isLastIteration and statWeights == "1":
-		simDict["scaleFactors"] = getScaleFactors(simcOutput)
+	if isLastIteration:
+		if statWeights == "1":
+			simDict["scaleFactors"] = getScaleFactors(simcOutput)
+		simDict["stats"] = getCharStats(simcOutput)
 
 	return simDict
 

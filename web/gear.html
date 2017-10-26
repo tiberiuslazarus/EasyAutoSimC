@@ -1,0 +1,133 @@
+<html>
+    <head>
+        <script type="application/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <script>
+            var gear = {}
+            var allGearIds = []
+
+            function getAllGearIds() {
+                allGearIds = [];
+                return allGearIds;
+            }
+
+            function parseGear() {
+                var line = $('#gear').val().split('\n');
+                allGearIds = [];
+                $.each(line, function(index, line) {
+                    if (line.trim() == '') { return; }
+
+                    var slot = (line.substr(0,line.indexOf("="))).trim();
+                    var slotGear = (line.substr(line.indexOf("=")+1)).trim();
+                    gear[slot] = parseSlot(slotGear);
+                });
+                renderGear();
+                console.log("Gear refreshed");
+                $WowheadPower.refreshLinks();
+            }
+
+            function parseSlot(gear) {
+                var gearList = gear.split("|");
+                
+                items = [];
+                $.each(gearList, function(index, item) {
+                    items.push(parseItem(item));
+                });
+                return items;
+            }
+
+            function renderGear() {
+                $.each(gear, function(slot, slotGear) {
+                    renderSlot(slot, slotGear);
+                })
+            }
+
+            function renderSlot(slot, slotGear) {
+                htmlListItems = []
+                $.each(slotGear, function(index, item) {
+                    htmlListItems.push( "<li id='" + slot + "_" + index + "'><a href='" + renderItem(item) + "' rel='" + renderItem(item) + "'>" + item["id"] + "</a></li>" );
+                });
+
+                htmlList = $( "<ul/>", {
+                    "class": "my-new-list",
+                    html: htmlListItems.join( "" )
+                });
+
+                $("#output #gear_" + slot).remove();
+
+                $( "<section/>", {
+                    "class": "gear " + slot,
+                    "id": "gear_" + slot,
+                    html: "<h3>" + slot + "</h3>" + htmlList.html()
+                }).appendTo( "#output" );
+                
+            }
+
+            function parseItem(item) {
+                itemProps = item.split(",");
+                itemDict = {};
+                $.each(itemProps, function(index, prop) {
+                    keyVal = prop.split("=");
+                    itemDict[keyVal[0]] = keyVal[1];
+
+                });
+                console.log(itemDict);
+                return itemDict;
+            }
+
+            function renderItem(item) {
+                baseURl = "http://www.wowhead.com/"
+
+                wowHeadKey = ["item=" + item["id"], "pcs=" + (getAllGearIds().join(":"))]
+                if ("bonus_id" in item)
+                    wowHeadKey.push("bonus=" + item["bonus_id"].replace(/\//g, ":"));
+                if ("gem_id" in item)
+                    wowHeadKey.push("gems=" + item["gem_id"].replace(/\//g, ":"));
+                if ("enchant_id" in item)
+                    wowHeadKey.push("ench=" + item["enchant_id"]);
+
+                url = baseURl + wowHeadKey.join("&");
+
+                return url;
+                // $.each(item, function( data ) {
+                //     var items = [];
+                //     $.each( data, function( key, val ) {
+                //         items.push( "<li id='" + key + "'>" + val + "</li>" );
+                //     });
+                //     
+
+                //     $( "<section/>", {
+                //         "class": "my-new-list",
+                //         html: list
+                //     }).appendTo( "#output" );
+                // });
+            }
+        </script>
+                
+        <script src="https://wow.zamimg.com/widgets/power.js"></script>
+        <script>var wowhead_tooltips = { "colorlinks": true, "iconizelinks": true, "renamelinks": true, "hide": { "droppedby": true, "dropchance": true } }</script>
+    </head>
+    <body onload="parseGear();">
+        <textarea id="gear" onchange="parseGear();" onfocusout="parseGear();">
+            head=L,id=137088,bonus_id=3459/3570|T20,id=147190,bonus_id=3562/42/1497/3528
+            neck=L,id=132444,enchant_id=5439,bonus_id=1811/3570,gem_id=151583|,id=130243,enchant_id=5439,bonus_id=1766/689/600/679,gem_id=151583
+            shoulder=,id=152379,bonus_id=3614/1472/3528|T20,id=147192,bonus_id=3562/1808/1497/3528,gem_id=151583|,id=147069,bonus_id=3562/1808/1497/3528,gem_id=151583
+            back=L,id=137053,enchant_id=5434,bonus_id=3459/3570|T20,id=147188,enchant_id=5434,bonus_id=3562/1527/3337
+            chest=T20,id=147187,bonus_id=3562/41/1497/3528|,id=151576,bonus_id=1697/3408/3609/600/3608
+            wrist=,id=123917,bonus_id=689/1702/3408/600/679|L,id=137107,bonus_id=1811/3570
+            hands=,id=140879,enchant_id=5444,bonus_id=3444/1512/3337|,id=152751,bonus_id=1697/3629/1507/3337|T20,id=147189,enchant_id=5444,bonus_id=3562/1507/3336
+            waist=,id=142129,bonus_id=3510/1527/3337
+            legs=T20,id=147191,bonus_id=3562/1502/3336|,id=147066,bonus_id=3561/1492/3528|L,id=151824,bonus_id=1811/3570
+            feet=,id=147060,bonus_id=3562/40/1517/3337|,id=147059,bonus_id=3562/1497/3528|,id=147428,bonus_id=3562/1497/3528|L,id=132443,bonus_id=3459/3570
+            finger1=,id=130231,enchant_id=5428,bonus_id=3374/689/601/679,gem_id=151583|L,id=151650,enchant_id=5428,bonus_id=3459/3570,gem_id=151583|,id=147020,enchant_id=5428,bonus_id=3562/1497/3528
+            finger2=,id=130231,enchant_id=5428,bonus_id=3374/689/601/679,gem_id=151583|L,id=151650,enchant_id=5428,bonus_id=3459/3570,gem_id=151583|,id=147020,enchant_id=5428,bonus_id=3562/1497/3528
+            trinket1=,id=137459,bonus_id=3573/40/1562/3528|L,id=144259,bonus_id=1811/3570|,id=151190,bonus_id=3561/1507/3337|,id=141482,bonus_id=3573/1522/3528|,id=147010,bonus_id=3562/1497/3528|,id=147012,bonus_id=3562/1497/3528
+            trinket2=,id=137459,bonus_id=3573/40/1562/3528|L,id=144259,bonus_id=1811/3570|,id=151190,bonus_id=3561/1507/3337|,id=141482,bonus_id=3573/1522/3528|,id=147010,bonus_id=3562/1497/3528|,id=147012,bonus_id=3562/1497/3528
+            main_hand=,id=128908,bonus_id=751,relic_id=3562:1502:3336/3561:1512:3337/3614:1472:3528,gem_id=147091/147113/152292
+            off_hand=,id=134553,relic_id=0/0,gem_id=0/0/0/0
+        </textarea>
+        <button onclick="parseGear();">Refresh Gear</button>
+        <div id="output">
+
+        </div>
+    </body>
+</html>

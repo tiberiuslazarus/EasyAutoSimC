@@ -42,11 +42,6 @@ def main():
 
 	indexName = createIndex(topSims, config["Profile"]["profilename"])
 
-	if (config["Profile"]["profilename"].lower() in ["kethark", "solenda", "swiftwraith"]):
-		print("---ERROR: Ecountered unexpected error. Unable to find proper maximum gear for %s." % config["Profile"]["profilename"])
-		print("\tFile \"D:\ExtraAutoSimCMaster\main.py\", line 34, in main")
-		print("---ERROR: Have you tried getting good?")
-
 	for fightStyle, enemiesFightTopSims in topSims.items():
 		for enemies, fightTopSims in enemiesFightTopSims.items():
 			print("---Best %s %s for %s %s results available at: %s---" % (len(fightTopSims), metric, fightStyle, enemies, indexName))
@@ -137,6 +132,21 @@ def createIndex(topSims, profileName):
 							scaleFactors += "<div class='scale'><div class='scaleAttribute'>%s</div><div class='scaleValue'>%s</div></div>" % (scaleFactor[0], scaleFactor[1].replace("(", " ("))
 						scaleFactors += "</div>"
 
+					stats = ""
+					if "stats" in topSim:
+						stats += "<div id='stats'><div class='header'>Stats</div>"
+						for statCategory in topSim["stats"]:
+							stats += "<div class='statCategory'><div class='statCategoryHeader'>%s</div>" % statCategory
+							stats+= "<div class='stat'><div class='statName'></div><div class='statBuffed statCol'>Raid Buffed</div><div class='statUnbuffed statCol'>Unbuffed</div></div>"
+								
+							for stat in topSim["stats"][statCategory]:
+								stats += "<div class='stat'>"
+								stats+= "<div class='statName'>%s</div>" % (stat)
+								stats += "<div class='statBuffed'>%s</div><div class='statUnbuffed'>%s</div>" % (topSim["stats"][statCategory][stat]["buffed"], topSim["stats"][statCategory][stat]["unbuffed"])
+								stats += "</div>"
+							stats += "</div>"
+						stats += "</div>"
+
 					leftDiv += "</div>"
 					rightDiv += "</div>"
 					weaponDiv += "</div>"
@@ -146,6 +156,7 @@ def createIndex(topSims, profileName):
 					resultsString += weaponDiv
 					resultsString += "</div>"
 					resultsString += scaleFactors
+					resultsString += stats
 					resultsString += "</div>\n"
 				navString += "</ul>"
 		index = indexTemplate.read()
