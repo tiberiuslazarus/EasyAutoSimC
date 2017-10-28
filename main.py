@@ -54,6 +54,8 @@ def main():
 
 def createIndex(topSims, profileName):
 	outputIndexName = 'results/%s/results_%s.html' % (profileName, datetime.datetime.now().strftime("%y%m%d%H%M"))
+	if not os.path.exists(os.path.dirname(os.path.abspath(outputIndexName))):
+		os.makedirs(os.path.dirname(os.path.abspath(outputIndexName)))
 	with open('web/index.template.html') as indexTemplate:
 		navString = ""
 		resultsString = ""
