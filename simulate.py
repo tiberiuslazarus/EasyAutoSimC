@@ -146,14 +146,20 @@ def runSimsSingleWide(simInputs, maxThreads):
 	return simResults
 
 def runSimsMultiThread(simInputs, maxthreads):
-	logger.debug("started createIndex()")
+	logger.debug("started runSimsMultiThread()")
 	simStartTime = time.time()
 	lastTime = simStartTime
-	pool = multiprocessing.Pool(min(int(maxthreads), len(simInputs)));
+
+	logger.debug("creating thread pool in runSimsMultiThread()")
+	pool = multiprocessing.Pool(min(int(maxthreads), len(simInputs)))
+	logger.debug("done creating thread pool in runSimsMultiThread()")
+
 	completedProfiles = 0
 
 	try:
+		logger.debug("running threads in runSimsMultiThread()")
 		simDicts = pool.starmap(runSim, simInputs)
+		logger.debug("done running threads in runSimsMultiThread()")
 		pool.close()
 	except KeyboardInterrupt:
 		pool.terminate()
