@@ -11,14 +11,19 @@ import math
 import itertools
 import shutil
 
+import logging
+logger = logging.getLogger(__name__)
+
 smallestMetrics = ["dtps", "theck_meloree_index", "tmi"]
 minResultSize = 10
 iterationSequence = [10,100,500,5000,15000]
 
 def getTopSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies):
+	logger.debug("started getTopSims()")
 	return getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies))
 
 def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies):
+	logger.debug("started runSims()")
 	gearIterations = {}
 	print("Total size of gear: %s" % (len(gear)))
 	talentSets = profile["talents"].split(",")
@@ -108,6 +113,7 @@ def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies)
 	return bestSimResults
 
 def getBestSimResults(metric, simResults, minResults=None):
+	logger.debug("started getBestSimResults()")
 	bestSimResults = None
 
 	simResultMetrics = [(simResult[metric], simResult["error"]) for simResult in simResults]
@@ -132,6 +138,7 @@ def getBestSimResults(metric, simResults, minResults=None):
 	return bestSimResults
 
 def runSimsSingleWide(simInputs, maxThreads):
+	logger.debug("started runSimsSingleWide()")
 	simResults = []
 	for simInput in simInputs:
 		simInput.append(maxThreads)
@@ -139,6 +146,7 @@ def runSimsSingleWide(simInputs, maxThreads):
 	return simResults
 
 def runSimsMultiThread(simInputs, maxthreads):
+	logger.debug("started createIndex()")
 	simStartTime = time.time()
 	lastTime = simStartTime
 	pool = multiprocessing.Pool(min(int(maxthreads), len(simInputs)));
@@ -161,6 +169,7 @@ def runSimsMultiThread(simInputs, maxthreads):
 	return simDicts
 
 def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies, iterations, maxthreads="1"):
+	logger.debug("started runSim()")
 	simProfile = generateGearProfile("easc", equippedGear, configProfile, enemies)
 
 	simcCall = ["simcraft/simc.exe", "threads=%s" % maxthreads, "fight_style=%s" % fightStyle, "iterations=%s" % iterations]
@@ -198,6 +207,7 @@ def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies
 	return simDict
 
 def printProgressBar(completed, totalSize, stageTime, totalIterationTime, prefix = '', suffix = '', decimals = 1, length = 50, fill = '|'):
+	logger.debug("started printProgressBar()")
 	percent = ("{0:." + str(decimals) + "f}").format(100 * (completed / float(totalSize)))
 
 	filledLength = int(length * completed // totalSize)
