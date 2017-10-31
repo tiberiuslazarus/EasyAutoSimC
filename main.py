@@ -9,7 +9,11 @@ import urllib.request
 import webbrowser
 import datetime
 
+import logging
+logger = logging.getLogger(__name__)
+
 def main():
+	logger.debug("started main()")
 	checkVersion()
 	config = loadConfig()
 	print("Performing gear comparisons for %s on Fight Styles: %s" % (config["Profile"]["profilename"], config["Sim"]["fightstyle"]))
@@ -44,8 +48,7 @@ def main():
 			print("---Best %s %s for %s results available at: %s---" % (len(fightTopSims), metric, fightStyle, indexName))
 			for i in range(len(fightTopSims)):
 				print("%s: %s +/- %s (Talents: %s)" %
-				 (i+1,
-				  "{:.1f}".format(fightTopSims[i][metric]),
+				 (i+1,"{:.1f}".format(fightTopSims[i][metric]),
 				  "{:.1f}".format(fightTopSims[i]["error"]),
 				  fightTopSims[i]["configProfile"]["talentset"]))
 		print("-------")
@@ -53,6 +56,7 @@ def main():
 	webbrowser.open("%s/%s" % (os.getcwd(), indexName))
 
 def createIndex(topSims, profileName):
+	logger.debug("started createIndex()")
 	outputIndexName = 'results/%s/results_%s.html' % (profileName, datetime.datetime.now().strftime("%y%m%d%H%M"))
 	if not os.path.exists(os.path.dirname(os.path.abspath(outputIndexName))):
 		os.makedirs(os.path.dirname(os.path.abspath(outputIndexName)))
@@ -166,6 +170,7 @@ def createIndex(topSims, profileName):
 	return outputIndexName
 
 def loadConfig():
+	logger.debug("started loadConfig()")
 	config = configparser.ConfigParser()
 
 	if (len(sys.argv) > 1 and os.path.isfile(sys.argv[1])):
@@ -262,6 +267,7 @@ def loadConfig():
 	return dict(config)
 
 def allTalents():
+	logger.debug("started allTalents()")
 	talents = ""
 	for a in range(1,4):
 		for b in range(1,4):
@@ -274,6 +280,7 @@ def allTalents():
 	return talents[:-1]
 
 def checkVersion():
+	logger.debug("started checkVersion()")
 	try:
 		localVersion = open("VERSION").read().rstrip()
 		remoteVersion = urllib.request.urlopen("https://raw.githubusercontent.com/tiberiuslazarus/ExtraAutoSimC/master/VERSION").read().rstrip().decode("utf-8")
@@ -284,6 +291,11 @@ def checkVersion():
 		print("--WARN: Unable to verify version information.")
 
 if __name__ == "__main__":
+	if len(sys.argv) > 2:
+		logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', filename="./easc.log", level=logging.getLevelName(sys.argv[2].upper()))
+	else:
+		logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', filename="./easc.log", level=logging.INFO)
+
 	start_time = time.time()
 	main()
 	timeSeconds = (time.time() - start_time)

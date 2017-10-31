@@ -296,3 +296,39 @@ ul.nav li a.current{
 .statCol {
   color: #e2b394;
 }
+
+#simComplete {
+  width: 100%;
+  font-size: calc(16px + .5vw);
+  margin: 20px;
+}
+
+#history {
+  width: 100%;
+  font-size: calc(10px + .5vw);
+}
+
+.historyLine {
+  width: 100%;
+}
+
+.historyIterations {
+  display: inline-block;
+  width: 20%;
+}
+
+.historyAction {
+  display: inline-block;
+  width: 40%;
+}
+
+.historyCompleted {
+  display: inline-block;
+  width: 30%;
+}
+
+#debug {
+  position: absolute;
+  top: 120%;
+  background-color: rgba(77, 0, 0, 0.85);
+}

@@ -1,7 +1,10 @@
 import sys
 import time
+import logging
+logger = logging.getLogger(__name__)
 
 def generateGear(availableGear):
+	logger.debug("started generateGear()")
 	generateStartTime = time.time()
 	print("---Generating profiles from gear options---")
 
@@ -32,6 +35,7 @@ def generateGear(availableGear):
 	return generatedGear
 
 def iterateGear(gearOptions):
+	logger.debug("started iterateGear()")
 	equippedGear = {}
 	gearProfiles = {"valid": [], "invalid": 0}
 
@@ -81,6 +85,7 @@ def iterateGear(gearOptions):
 	return gearProfiles
 
 def generateGearProfile(outputFileName, equippedGear, configProfile, enemies):
+	logger.debug("started generateGearProfile()")
 	gearProfile = []
 	gearProfile.append("%s=%s_%s" % (configProfile["class"], configProfile["profilename"], outputFileName))
 	gearProfile.append("specialization=%s" % (configProfile["spec"]))
@@ -105,6 +110,7 @@ def generateGearProfile(outputFileName, equippedGear, configProfile, enemies):
 	return gearProfile
 
 def usable(equippedGear):
+	logger.debug("started usable()")
 	legmax=2
 	nbLeg=0
 
