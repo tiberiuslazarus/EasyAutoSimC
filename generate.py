@@ -1,7 +1,7 @@
 import sys
 import time
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 def generateGear(availableGear):
 	logger.debug("started generateGear()")
@@ -107,6 +107,7 @@ def generateGearProfile(outputFileName, equippedGear, configProfile, enemies):
 	except:
 		pass
 
+	logger.debug("done generateGearProfile()")
 	return gearProfile
 
 def usable(equippedGear):
