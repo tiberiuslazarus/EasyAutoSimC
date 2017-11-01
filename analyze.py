@@ -6,7 +6,7 @@ import re
 from operator import itemgetter
 from multiprocessing import Pool
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 def processOutput(simcOutput, metric):
 	logger.debug("started processOutput()")

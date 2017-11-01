@@ -12,7 +12,7 @@ import itertools
 import shutil
 
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 smallestMetrics = ["dtps", "theck_meloree_index", "tmi"]
 minResultSize = 10
@@ -21,6 +21,7 @@ iterationSequence = [10,100,500,5000,15000]
 def getTopSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies):
 	logger.debug("started getTopSims()")
 	return getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies))
+	logger.debug("done getTopSims()")
 
 def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies):
 	logger.debug("started runSims()")
@@ -110,6 +111,7 @@ def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies)
 	# All iterations done
 	bestSimResults = getBestSimResults(metric, simResults, minResults=True)
 
+	logger.debug("done runSims()")
 	return bestSimResults
 
 def getBestSimResults(metric, simResults, minResults=None):
@@ -135,6 +137,7 @@ def getBestSimResults(metric, simResults, minResults=None):
 	else:
 		bestSimResults = tempBestResults
 
+	logger.debug("done getBestSimResults()")
 	return bestSimResults
 
 def runSimsSingleWide(simInputs, maxThreads):
@@ -172,6 +175,7 @@ def runSimsMultiThread(simInputs, maxthreads):
 		sys.exit(2)
 	finally:
 		pool.join()
+	logger.debug("done runSimsMultiThread()")
 	return simDicts
 
 def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies, iterations, maxthreads="1"):
@@ -210,6 +214,7 @@ def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies
 			simDict["scaleFactors"] = getScaleFactors(simcOutput)
 		simDict["stats"] = getCharStats(simcOutput)
 
+	logger.debug("done runSim()")
 	return simDict
 
 def printProgressBar(completed, totalSize, stageTime, totalIterationTime, prefix = '', suffix = '', decimals = 1, length = 50, fill = '|'):
@@ -240,3 +245,4 @@ def printProgressBar(completed, totalSize, stageTime, totalIterationTime, prefix
 		print('\r%s <%s> %s%% %s (Time taken: %s:%s)						           '
 			% (prefix, bar, percent, suffix, "{0:02d}".format(int(m)), "{0:04.1f}".format(s)))
 		print()
+	logger.debug("done printProgressBar()")
