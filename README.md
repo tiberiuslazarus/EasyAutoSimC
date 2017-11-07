@@ -8,20 +8,21 @@ Created to work in Python3 on Windows 64bit. It is likely possible to replace th
 *** MOSTLY EXPERIMENTAL. DO NOT MAKE ANY PERMANENT GEAR DECISIONS BASED ON THIS OUTPUT ***
 
 
-## SimC Verison
+## Quick Start
 
-simc-730-03-win64-4307e5bea.7z	2017-10-27 00:18
+1) Download and install [python for 64 bit Windows](https://www.python.org/ftp/python/3.6.3/python-3.6.3-amd64.exe)
 
+    For ease of use, choose to "Customise installation" and ensure "Add python to environment variables" is selected
 
-## Usage
+2) Download and extract the latest version of this application [here](https://github.com/tiberiuslazarus/ExtraAutoSimC/archive/master.zip)
 
-1) Export your gear options you would like to compare from [SimPermut](https://mods.curse.com/addons/wow/254069-simpermut) in AutoSimC format. Copy and paste the export to a file.
+3) Export your gear options you would like to compare from [SimPermut](https://mods.curse.com/addons/wow/254069-simpermut) in AutoSimC format. Copy and paste the export to a file.
 
-2) Run: `launch.bat` *or* from command line: `python main.py`
+4) Run: `launch.bat` *or* from command line: `python main.py`
 
-3) Enter the name of a file containing an export of data in autosimc format from SimPermut. Optionally the file name can be passed as the first argument on command line.
+5) Enter the name of a file containing an export of data in autosimc format from SimPermut. Optionally the file name can be passed as the first argument on command line.
 
-4) Html format results from SimC for the top 5 dps profiles will be saved in ./output/html/ . Open those to see what gear is equipped for that profile.
+6) Html format results from SimC for the top 5 dps profiles will be saved in ./output/html/ . Open those to see what gear is equipped for that profile.
 
 
 ### CPU Usage
@@ -120,7 +121,7 @@ skill=100
 
 ## Future
 
-* Cleaner output of gear for top profiles. Having to open separate html files to see the equipped gear kind of sucks and is not very Auto. -- * In process *
+* ~~Cleaner output of gear for top profiles. Having to open separate html files to see the equipped gear kind of sucks and is not very Auto.~~ -- WHOO!
 * ~~Clean up SimC profiles after execution~~ -- DONE
 * Configuration options:
   * ~~Sim multiple fight types (patchwerk, heavy movement, cleave)~~ -- DONE
@@ -128,6 +129,11 @@ skill=100
   * ~~Compare talent sets as well as gear~~ -- Done
   * ~~Player skill level~~
   * ~~Calculate stat weights for top simming gear sets~~
-  * Plot stats for top simming gear sets
-  * Modify food and potions. Possibly in the same vein as talents with ability to sim multiple/all?
+  * Plot stats for top simming gear sets -- Not a priority
+  * Modify food and potions. Possibly in the same vein as talents with ability to sim multiple/all? -- Not a priority
 * GUI of some sort
+
+
+## SimC Verison
+
+simc-730-03-win64-4307e5bea.7z	2017-10-27 00:18
