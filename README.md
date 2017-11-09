@@ -16,7 +16,7 @@ Created to work in Python3 on Windows 64bit. It is likely possible to replace th
 
 2) Download and extract the latest version of this application [here](https://github.com/tiberiuslazarus/ExtraAutoSimC/archive/master.zip)
 
-3) Export your gear options you would like to compare from [SimPermut](https://mods.curse.com/addons/wow/254069-simpermut) in AutoSimC format. Copy and paste the export to a file.
+3) Install WoW addon [SimPermut](https://mods.curse.com/addons/wow/254069-simpermut). Export your gear options you would like to compare from in AutoSimC format. Copy, paste, and save the export to a file.
 
 4) Run: `launch.bat` *or* from command line: `python main.py`
 
@@ -27,7 +27,7 @@ Created to work in Python3 on Windows 64bit. It is likely possible to replace th
 
 ### CPU Usage
 
-The system will attempt to spawn multiple threads for simming. If more than 2 CPUs are available this value will be ([# of CPUs] - 2), otherwise only 1 thread will perform sims. This default can be overridden in a config file by adding the following:
+The system will attempt to spawn multiple threads for simming this may impact performance of other applications you are running (WoW tends to behave interestingly if you run sims and raid at the same time). If more than 2 CPUs are available this value will be ([# of CPUs] - 2), otherwise only 1 thread will perform sims. This default can be overridden in a config file by adding the following:
 
 ```
 [Sim]
@@ -60,19 +60,21 @@ enemies=1,2,3
 
 ### Talents
 
-Talent sets can be defined in your profile file. All fight styles will be simmed with all available talent sets. The top combinations of gear and talents will be returned.
+Talent sets can be defined in your profile file. By default simpermut will export your currently selected talents. To override those talents modify the 'talents=' line in your config. 
 
 ```
 [Profile]
 talents=1111321
 ```
 
+You may also choose to sim your gear against multiple talent sets. All fight styles will be simmed with all available talent sets. The top combinations of gear and talents will be returned.
+
 ```
 [Profile]
 talents=1111321,1111111,2222222,3333333
 ```
 
-Alternatively, may run sim against all possible talent combinations. This may take quite long time.
+Alternatively, you may run sims against all possible talent combinations. This may take quite a long time as this results in running 2187 sims for each combination of gear available.
 
 ```
 [Profile]
@@ -133,6 +135,10 @@ skill=100
   * Modify food and potions. Possibly in the same vein as talents with ability to sim multiple/all? -- Not a priority
 * GUI of some sort
 
+
+## Troubleshooting
+
+If you run in to any issues with this program, need advice, or just have some questions, feel free pop over to our Discord channel: https://discord.gg/xctxcvh
 
 ## SimC Verison
 
