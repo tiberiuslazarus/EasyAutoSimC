@@ -88,6 +88,18 @@ def generateGearProfile(outputFileName, equippedGear, configProfile, enemies):
 	logger.debug("started generateGearProfile()")
 	gearProfile = []
 	gearProfile.append("%s=%s_%s" % (configProfile["class"], configProfile["profilename"], outputFileName))
+	# print(configProfile)
+	# for key, val in configProfile.items():
+		# if key in ["class", "profilename", "talents", "profileid", "other"]:
+		# 	continue
+		# if key == "spec":
+		# 	key = "specialization"
+		# elif key == "talentset":
+		# 	key = "talents"
+		# elif key == "skill":
+		# 	val = (float(configProfile["skill"]) / 100)
+		# # if key in ['spec', 'race', 'level', 'role', 'position', 'talents', 'artifact', 'skill']:
+		# 	gearProfile.append("%s=%s" % (key, val))
 	gearProfile.append("specialization=%s" % (configProfile["spec"]))
 	gearProfile.append("race=%s" % (configProfile["race"]))
 	gearProfile.append("level=%s" % (configProfile["level"]))

@@ -16,7 +16,7 @@ def main():
 	logger.debug("started main()")
 	checkVersion()
 	config = loadConfig()
-	print("Performing gear comparisons for %s on Fight Styles: %s" % (config["Profile"]["profilename"], config["Sim"]["fightstyle"]))
+	print("Performing gear comparisons on Fight Styles: %s" % (config["Sim"]["fightstyle"]))
 	print("Simming at player skill level: %s%%" % config["Profile"]["skill"])
 	print("Using %s threads" % config["Sim"]["maxthreads"])
 	print()
@@ -211,7 +211,7 @@ def loadConfig():
 		for enemies in config["Sim"]["enemies"].split(","):
 			try:
 				if int(enemies) <= 0:
-					print("WARN: Skill option not a valid number greater than 0. Defaulting to unspecified.")
+					print("WARN: enemies option not a valid number greater than 0. Defaulting to unspecified.")
 					config.remove_option("Sim","enemies")
 			except Exception:
 				print("WARN: Enemies option not a valid number. Defaulting to unspecified.")
@@ -261,6 +261,45 @@ def loadConfig():
 					print("Invalid talents supplied: %s" % (config["Profile"]["talents"]))
 					sys.exit(97)
 
+	if config.has_option("Profile", "class") and config.has_option("Profile", "profilename"):
+		config.set("Profile", config.get("Profile", "class"), config.get("Profile", "profilename"))
+	else:
+		if config.has_option("Profile", "deathknight"):
+			config.set("Profile", "profilename", config.get("Profile", "deathknight"))
+			config.set("Profile", "class", "deathknight")
+		elif config.has_option("Profile", "demonhunter"):
+			config.set("Profile", "profilename", config.get("Profile", "demonhunter"))
+			config.set("Profile", "class", "demonhunter")
+		elif config.has_option("Profile", "druid"):
+			config.set("Profile", "profilename", config.get("Profile", "druid"))
+			config.set("Profile", "class", "druid")
+		elif config.has_option("Profile", "hunter"):
+			config.set("Profile", "profilename", config.get("Profile", "hunter"))
+			config.set("Profile", "class", "hunter")
+		elif config.has_option("Profile", "mage"):
+			config.set("Profile", "profilename", config.get("Profile", "mage"))
+			config.set("Profile", "class", "mage")
+		elif config.has_option("Profile", "monk"):
+			config.set("Profile", "profilename", config.get("Profile", "monk"))
+			config.set("Profile", "class", "monk")
+		elif config.has_option("Profile", "paladin"):
+			config.set("Profile", "profilename", config.get("Profile", "paladin"))
+			config.set("Profile", "class", "paladin")
+		elif config.has_option("Profile", "priest"):
+			config.set("Profile", "profilename", config.get("Profile", "priest"))
+			config.set("Profile", "class", "priest")
+		elif config.has_option("Profile", "rogue"):
+			config.set("Profile", "profilename", config.get("Profile", "rogue"))
+			config.set("Profile", "class", "rogue")
+		elif config.has_option("Profile", "shaman"):
+			config.set("Profile", "profilename", config.get("Profile", "shaman"))
+			config.set("Profile", "class", "shaman")
+		elif config.has_option("Profile", "warlock"):
+			config.set("Profile", "profilename", config.get("Profile", "warlock"))
+			config.set("Profile", "class", "warlock")
+		elif config.has_option("Profile", "warrior"):
+			config.set("Profile", "profilename", config.get("Profile", "warrior"))
+			config.set("Profile", "class", "warrior")
 
 	print()
 
