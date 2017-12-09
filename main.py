@@ -240,6 +240,9 @@ def loadConfig():
 			config["Profile"]["skill"] = "100"
 			print("WARN: Skill option not a valid number. Defaulting to elite (100).")
 
+	if not config.has_option("Profile", "crucible"):
+		config["Profile"]["crucible"] = ""
+
 	# extend the acronym because simc is stupid
 	if config["Sim"]["metric"] == "theck_meloree_index":
 		config["Sim"]["metric"] = "tmi"
