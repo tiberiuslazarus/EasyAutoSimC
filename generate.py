@@ -107,6 +107,7 @@ def generateGearProfile(outputFileName, equippedGear, configProfile, enemies):
 	gearProfile.append("position=%s" % (configProfile["position"]))
 	gearProfile.append("talents=%s" % (configProfile["talentset"]))
 	gearProfile.append("artifact=%s" % (configProfile["artifact"]))
+	gearProfile.append("crucible=%s" % (configProfile["crucible"]))
 	gearProfile.append("skill=%s" % (float(configProfile["skill"]) / 100))
 
 	for slot, gear in equippedGear.items():
