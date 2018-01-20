@@ -16,7 +16,7 @@ def main():
 	logger.debug("started main()")
 	checkVersion()
 	config = loadConfig()
-	print("Performing gear comparisons on Fight Styles: %s" % (config["Sim"]["fightstyle"]))
+	print("Performing gear comparisons on Fight Styles: %s" % (config["Sim"]["fightstyle"].split(",")))
 	print("Simming at player skill level: %s%%" % config["Profile"]["skill"])
 	print("Using %s threads" % config["Sim"]["maxthreads"])
 	print()
@@ -42,17 +42,19 @@ def main():
 			topSims[fightStyle][enemies] = getTopSims(fightStyle, generatedGear["valid"], config["Profile"], config["Sim"]["maxthreads"], metric, statWeights, enemies)
 
 	indexName = createIndex(topSims, config["Profile"]["profilename"])
+	print("---Results available at: %s---" % (indexName))
 
-	for fightStyle, enemiesFightTopSims in topSims.items():
-		for enemies, fightTopSims in enemiesFightTopSims.items():
-			print("---Best %s %s for %s results available at: %s---" % (len(fightTopSims), metric, fightStyle, indexName))
-			for i in range(len(fightTopSims)):
-				print("%s: %s +/- %s (Talents: %s)" %
-				 (i+1,"{:.1f}".format(fightTopSims[i][metric]),
-				  "{:.1f}".format(fightTopSims[i]["error"]),
-				  fightTopSims[i]["configProfile"]["talentset"]))
-		print("-------")
-		print()
+	# for fightStyle, enemiesFightTopSims in topSims.items():
+	# 	for enemies, fightTopSims in enemiesFightTopSims.items():
+	# 		print("---Best %s %s for %s results available at: %s---" % (len(fightTopSims), metric, fightStyle, indexName))
+	# 		for i in range(len(fightTopSims)):
+	# 			print("%s: %s +/- %s (Talents: %s)" %
+	# 			 (i+1,"{:.1f}".format(fightTopSims[i][metric]),
+	# 			  "{:.1f}".format(fightTopSims[i]["error"]),
+	# 			  fightTopSims[i]["configProfile"]["talentset"]))
+	# 	print("-------")
+	# 	print()
+
 	webbrowser.open("%s/%s" % (os.getcwd(), indexName))
 
 def createIndex(topSims, profileName):
@@ -202,9 +204,7 @@ def loadConfig():
 		config["Sim"]["fightstyle"] = "Patchwerk"
 		print("INFO: Defaulting fightstyle to %s." % config["Sim"]["fightstyle"])
 	else:
-		print(config["Sim"]["fightstyle"])
 		config["Sim"]["fightstyle"] = config["Sim"]["fightstyle"].replace(" ", "")
-		print(config["Sim"]["fightstyle"])
 
 	if config.has_option("Sim", "enemies"):
 		config["Sim"]["enemies"] = config["Sim"]["enemies"].replace(" ", "")
@@ -256,9 +256,7 @@ def loadConfig():
 		if config["Profile"]["talents"].lower() == "all":
 			config["Profile"]["talents"] = allTalents()
 		else:
-			print(config["Profile"]["talents"])
 			config["Profile"]["talents"] = config["Profile"]["talents"].replace(" ", "")
-			print(config["Profile"]["talents"])
 			for talent in config["Profile"]["talents"].split(","):
 				if len(talent) != 7 or not talent.isnumeric() or len([x for x in talent if (not x.isdigit() or int(x) not in [1,2,3])]) != 0:
 					print("Invalid talents supplied: %s" % (config["Profile"]["talents"]))

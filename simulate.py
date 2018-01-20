@@ -26,7 +26,7 @@ def getTopSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemi
 def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies):
 	logger.debug("started runSims()")
 	gearIterations = {}
-	print("Total size of gear: %s" % (len(gear)))
+	# print("Total size of gear: %s" % (len(gear)))
 	talentSets = profile["talents"].split(",")
 	topSims = []
 	maxthreads = int(maxthreads)
@@ -41,7 +41,6 @@ def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies)
 		for gearSet in gear:
 			simInputs.append([fightStyle, gearSet, dict(profile), metric, statWeights, enemies])
 
-	print("%s Talent Sets * %s Gear Sets" % (len(talentSets), len(gear)))
 	print()
 
 	for iterations in iterationSequence:
@@ -102,10 +101,8 @@ def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies)
 	for gearHash, iterations in gearIterations.items():
 		iterationsRun += sum(iterations)
 
-	print("---Sim stats---")
-	print("Gear count: %s" % len(gearIterations))
 	print("Total iterations run: %s" % iterationsRun)
-	print("Iteration reduction vs running all gear at max iterations: %s%%" % (((max(iterationSequence)*len(gearIterations))-iterationsRun)/(max(iterationSequence)*len(gearIterations))*100))
+	print("Iteration reduction vs running all gear at max iterations: %s%%" % ("{0:05.2f}".format(((max(iterationSequence)*len(gearIterations)*len(talentSets))-iterationsRun)/(max(iterationSequence)*len(gearIterations)*len(talentSets))*100)))
 	print()
 
 	# All iterations done
@@ -193,6 +190,8 @@ def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies
 
 			if metric == "tmi":
 				simcCall.append("scale_over=tmi")
+
+	simcCall.append("html=temp.html")
 
 	simcOutput = subprocess.check_output(simcCall, stderr=subprocess.DEVNULL).decode("utf-8")
 
