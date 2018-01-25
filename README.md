@@ -142,4 +142,4 @@ If you run in to any issues with this program, need advice, or just have some qu
 
 ## SimC Verison
 
-simc-730-03-win64-124e6f26c.7z	2017-12-06 23:38
+simc-730-03-win64-65c8b3c92.7z	2018-01-24 04:57

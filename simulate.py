@@ -140,12 +140,12 @@ def resultProcesser(tempResultsQueue, resultsQueue, metric):
 
 			if resultsQueue.qsize() > minResultSize:
 				if metric in smallestMetrics:
-					if (tempResult[metric] - tempResult["error"]) > bestMetric:
+					if (tempResult[metric] - tempResult["error"]*.75) > bestMetric:
 						tempResult = False
 					elif tempResult[metric] < bestMetric:
 						bestResult = (tempResult[metric], tempResult["error"])
 				else:
-					if (tempResult[metric] + tempResult["error"]) < bestMetric:
+					if (tempResult[metric] + tempResult["error"]*1.25) < bestMetric:
 						tempResult = False
 					elif tempResult[metric] > bestMetric:
 						bestResult = (tempResult[metric], tempResult["error"])
