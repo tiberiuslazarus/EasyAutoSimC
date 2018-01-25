@@ -140,12 +140,12 @@ def resultProcesser(tempResultsQueue, resultsQueue, metric):
 
 			if resultsQueue.qsize() > minResultSize:
 				if metric in smallestMetrics:
-					if (tempResult[metric] - tempResult["error"]) > bestMetric:
+					if (tempResult[metric] - tempResult["error"]*.75) > bestMetric:
 						tempResult = False
 					elif tempResult[metric] < bestMetric:
 						bestResult = (tempResult[metric], tempResult["error"])
 				else:
-					if (tempResult[metric] + tempResult["error"]) < bestMetric:
+					if (tempResult[metric] + tempResult["error"]*1.25) < bestMetric:
 						tempResult = False
 					elif tempResult[metric] > bestMetric:
 						bestResult = (tempResult[metric], tempResult["error"])
@@ -260,7 +260,12 @@ def generateProfile(outputFileName, equippedGear, configProfile, enemies):
 	gearProfile.append("artifact=%s" % (configProfile["artifact"]))
 	gearProfile.append("crucible=%s" % (configProfile["crucible"]))
 	gearProfile.append("skill=%s" % (float(configProfile["skill"]) / 100))
-
+	if "max_time" in configProfile:
+		gearProfile.append("max_time=%s" % (configProfile["max_time"]))
+		
+	if "vary_combat_length" in configProfile:
+		gearProfile.append("vary_combat_length=%s" % (float(configProfile["vary_combat_length"]) / 100))
+		
 	for slot, gear in equippedGear.items():
 		if gear != "":
 			gearProfile.append("%s=%s" % (slot, (gear if gear[0]!="L" else gear[1:])))

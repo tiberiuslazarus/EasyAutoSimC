@@ -1,4 +1,4 @@
-from generate import *
+# from generate import *
 from simulate import *
 from analyze import *
 
@@ -21,8 +21,6 @@ def main():
 	print("Using %s threads" % config["Sim"]["maxthreads"])
 	print()
 
-	# generatedGear = generateGear(config["Gear"])
-
 	metric = config["Sim"]["metric"]
 	statWeights = config["Sim"]["statweights"]
 	if "enemies" in config["Sim"]:
@@ -43,17 +41,6 @@ def main():
 
 	indexName = createIndex(topSims, config["Profile"]["profilename"])
 	print("---Results available at: %s---" % (indexName))
-
-	# for fightStyle, enemiesFightTopSims in topSims.items():
-	# 	for enemies, fightTopSims in enemiesFightTopSims.items():
-	# 		print("---Best %s %s for %s results available at: %s---" % (len(fightTopSims), metric, fightStyle, indexName))
-	# 		for i in range(len(fightTopSims)):
-	# 			print("%s: %s +/- %s (Talents: %s)" %
-	# 			 (i+1,"{:.1f}".format(fightTopSims[i][metric]),
-	# 			  "{:.1f}".format(fightTopSims[i]["error"]),
-	# 			  fightTopSims[i]["configProfile"]["talentset"]))
-	# 	print("-------")
-	# 	print()
 
 	webbrowser.open("%s/%s" % (os.getcwd(), indexName))
 
@@ -301,6 +288,25 @@ def loadConfig():
 		elif config.has_option("Profile", "warrior"):
 			config.set("Profile", "profilename", config.get("Profile", "warrior"))
 			config.set("Profile", "class", "warrior")
+
+	if config.has_option("Profile", "max_time"):
+		try:
+			if int(config["Profile"]["max_time"]) < 0:
+				config.remove_option("Profile", "max_time")
+				print("WARN: max_time is an invalid value. Defaulting.")
+		except Exception:
+			config.remove_option("Profile", "max_time")
+			print("WARN: max_time is an invalid value. Defaulting.")
+
+
+	if config.has_option("Profile", "vary_combat_length"):
+		try:
+			if int(config["Profile"]["vary_combat_length"]) < 0 or int(config["Profile"]["vary_combat_length"]) > 100:
+				config.remove_option("Profile", "vary_combat_length")
+				print("WARN: vary_combat_length is an invalid value. Defaulting.")
+		except Exception:
+			config.remove_option("Profile", "vary_combat_length")
+			print("WARN: vary_combat_length is an invalid value. Defaulting.")
 
 	print()
 

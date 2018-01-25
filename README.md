@@ -121,6 +121,22 @@ SimC Equivalents:
 skill=100
 ```
 
+### Fight Length and Variance
+
+Set the duration of the fight and optionally include some variance to that duration.
+
+max\_time is in seconds. vary\_fight\_length is a percentage.
+
+
+```
+[Profile]
+max_time=300
+vary_fight_length=20
+```
+
+The above would cause the sims to be run against fights ranging from 240 - 360 seconds.
+
+
 ## Future
 
 * ~~Cleaner output of gear for top profiles. Having to open separate html files to see the equipped gear kind of sucks and is not very Auto.~~ -- WHOO!
@@ -131,6 +147,7 @@ skill=100
   * ~~Compare talent sets as well as gear~~ -- Done
   * ~~Player skill level~~
   * ~~Calculate stat weights for top simming gear sets~~
+  * ~~Options for max fight time and fight time variance~~
   * Plot stats for top simming gear sets -- Not a priority
   * Modify food and potions. Possibly in the same vein as talents with ability to sim multiple/all? -- Not a priority
 * GUI of some sort
@@ -142,4 +159,4 @@ If you run in to any issues with this program, need advice, or just have some qu
 
 ## SimC Verison
 
-simc-730-03-win64-124e6f26c.7z	2017-12-06 23:38
+simc-730-03-win64-65c8b3c92.7z	2018-01-24 04:57
