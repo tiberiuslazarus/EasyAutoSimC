@@ -289,6 +289,25 @@ def loadConfig():
 			config.set("Profile", "profilename", config.get("Profile", "warrior"))
 			config.set("Profile", "class", "warrior")
 
+	if config.has_option("Profile", "max_time"):
+		try:
+			if int(config["Profile"]["max_time"]) < 0:
+				config.remove_option("Profile", "max_time")
+				print("WARN: max_time is an invalid value. Defaulting.")
+		except Exception:
+			config.remove_option("Profile", "max_time")
+			print("WARN: max_time is an invalid value. Defaulting.")
+
+
+	if config.has_option("Profile", "vary_combat_length"):
+		try:
+			if int(config["Profile"]["vary_combat_length"]) < 0 or int(config["Profile"]["vary_combat_length"]) > 100:
+				config.remove_option("Profile", "vary_combat_length")
+				print("WARN: vary_combat_length is an invalid value. Defaulting.")
+		except Exception:
+			config.remove_option("Profile", "vary_combat_length")
+			print("WARN: vary_combat_length is an invalid value. Defaulting.")
+
 	print()
 
 	return dict(config)
