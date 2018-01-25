@@ -1,16 +1,16 @@
-from string import Template
 import multiprocessing
 import time
 import sys
 import subprocess
 import os
 from analyze import *
-from generate import generateGearProfile
 import traceback
 import math
 import itertools
 import shutil
+import gear
 
+import cProfile
 import logging
 logger = logging.getLogger()
 
@@ -18,98 +18,139 @@ smallestMetrics = ["dtps", "theck_meloree_index", "tmi"]
 minResultSize = 10
 iterationSequence = [10,100,500,5000,15000]
 
-def getTopSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies):
+def getTopSims(fightStyle, gearList, profile, maxthreads, metric, statWeights, enemies):
 	logger.debug("started getTopSims()")
-	return getBestSimResults(metric, runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies))
+	return getBestSimResults(metric, runSims(fightStyle, gearList, profile, maxthreads, metric, statWeights, enemies))
 	logger.debug("done getTopSims()")
 
-def runSims(fightStyle, gear, profile, maxthreads, metric, statWeights, enemies):
+def runSims(fightStyle, gearList, profile, maxthreads, metric, statWeights, enemies):
 	logger.debug("started runSims()")
 	gearIterations = {}
-	# print("Total size of gear: %s" % (len(gear)))
+
 	talentSets = profile["talents"].split(",")
 	topSims = []
 	maxthreads = int(maxthreads)
 	totalSimTime = 0
 
-	print("--Generating talent and gear combinations--")
 	simInputs = []
-	for talentSet in talentSets:
-		if talentSet == "":
-			continue
-		profile["talentset"] = talentSet
-		for gearSet in gear:
-			simInputs.append([fightStyle, gearSet, dict(profile), metric, statWeights, enemies])
-
-	print()
+	simResults = []
 
 	for iterations in iterationSequence:
 		totalIterationGear = len(simInputs)
-		isLastIteration = (iterations == iterationSequence[len(iterationSequence)-1])
-		if len(simInputs) <= minResultSize:
-			if not isLastIteration:
+
+		if simResults != [] and len(simResults) <= minResultSize:
+			if not isLastIteration(iterations):
 				continue
 
-
-		for simInput in simInputs:
-			if hash(frozenset(simInput[1].items())) in gearIterations:
-				gearIterations[hash(frozenset(simInput[1].items()))].append(iterations)
-			else:
-				gearIterations[hash(frozenset(simInput[1].items()))] = [iterations]
-			simInput.append(iterations)
-
-		simResults = []
-		iterationTime = 0
-		completedSims = 0
-		maxBatchSize = 1 if isLastIteration else 10 if totalIterationGear < 100 else 100 if totalIterationGear < 3000 else 1000
-
-		print("Total size of run at %s iterations: %s" % (iterations, len(simInputs)))
-		print("Batch size of %s" % min(maxBatchSize, len(simInputs)))
-		if isLastIteration and statWeights != "0":
-			print("Beginning final gear iterations calculating stat weights. This may take quite some time. Grab a drink? Do some pushups?")
-
-		printProgressBar(completedSims, totalIterationGear, 0, 0)
-
-		while (len(simInputs) > 0):
-			batchStartTime = time.time()
-
-			batchSize=min(maxBatchSize, len(simInputs))
-			batchInputs = simInputs[:batchSize]
-			del simInputs[:batchSize]
-
-			if isLastIteration:
-				simResults.extend(runSimsSingleWide(batchInputs, maxthreads))
-			else:
-				simResults.extend(runSimsMultiThread(batchInputs, maxthreads))
-
-			batchTime = (time.time() - batchStartTime)
-			completedSims += batchSize
-			iterationTime += batchTime
-
-			printProgressBar(completedSims, totalIterationGear, batchTime, iterationTime)
-
-		# iteration complete; calculate results for next pass
-		if not isLastIteration:
-			totalSimTime += iterationTime
-			bestSimResults = getBestSimResults(metric, simResults)
-
-			simInputs = []
-			for simResult in bestSimResults:
-				simInputs.append([fightStyle, simResult["equippedGear"], simResult["configProfile"], metric, statWeights, simResult["enemies"]])
-
-	iterationsRun = 0
-	for gearHash, iterations in gearIterations.items():
-		iterationsRun += sum(iterations)
-
-	print("Total iterations run: %s" % iterationsRun)
-	print("Iteration reduction vs running all gear at max iterations: %s%%" % ("{0:05.2f}".format(((max(iterationSequence)*len(gearIterations)*len(talentSets))-iterationsRun)/(max(iterationSequence)*len(gearIterations)*len(talentSets))*100)))
-	print()
+		print("--Beginning sims at %s Iterations" % (iterations))
+		if simResults == []:
+			simResults = getBestSimResults(metric, runIterations(gearList, fightStyle, dict(profile), metric, statWeights, enemies, maxthreads, iterations, talentSets))
+		else:
+			simResults = getBestSimResults(metric, runIterations(simResults, fightStyle, dict(profile), metric, statWeights, enemies, maxthreads, iterations))
 
 	# All iterations done
 	bestSimResults = getBestSimResults(metric, simResults, minResults=True)
 
 	logger.debug("done runSims()")
 	return bestSimResults
+
+def runIterations(simGear, fightStyle, profile, metric, statWeights, enemies, maxthreads, iterations, talentSets=None):
+	manager = multiprocessing.Manager()
+
+	gearQueue = manager.Queue(maxthreads*2)
+	tempResultsQueue = manager.Queue()
+	resultsQueue = manager.Queue()
+	progressQueue = manager.Queue()
+	
+	resultsList = []
+
+	gearObj = gear.Gear(simGear)
+	totalGearSets = gearObj.getPossibleCount()
+
+	progressProcess = multiprocessing.Process(target=printProgress, name="progress", args=(totalGearSets, progressQueue, iterations))
+	progressProcess.start()
+	
+	resultProcesserProcess = multiprocessing.Process(target=resultProcesser, name="resultProcesser", args=(tempResultsQueue, resultsQueue, metric))
+	resultProcesserProcess.start()
+
+	threads = 1 if isLastIteration(iterations) else maxthreads
+
+	simProcesses = [multiprocessing.Process(target=worker, args=(fightStyle, profile, metric, statWeights, enemies, maxthreads, iterations, gearQueue, tempResultsQueue, progressQueue)) for i in range(threads)]
+	gearProcess = multiprocessing.Process(target=gearObj.getGear, name="gearWorker", args=(gearQueue,talentSets))
+
+	for proc in simProcesses:
+		proc.start()
+	gearProcess.start()
+
+	gearProcess.join()
+
+	for proc in simProcesses:
+		gearQueue.put(None)
+	for proc in simProcesses:
+		proc.join()
+	
+	tempResultsQueue.put(None)
+	resultProcesserProcess.join()
+
+	progressQueue.put(None)
+	progressProcess.join()
+
+	print()
+
+	while resultsQueue.qsize() != 0:
+		result = resultsQueue.get()
+		if result is not False:
+			resultsList.append(result)
+
+	return resultsList
+
+def isLastIteration(iterations):
+	return (iterations == iterationSequence[len(iterationSequence)-1])
+
+def worker(fightStyle, profile, metric, statWeights, enemies, maxthreads, iterations, gearQueue, tempResultsQueue, progressQueue):
+	cProfile.runctx('workerRun(fightStyle, profile, metric, statWeights, enemies, maxthreads, iterations, gearQueue, tempResultsQueue, progressQueue)', globals(), locals(), filename='cprofile.txt')
+
+def workerRun(fightStyle, profile, metric, statWeights, enemies, maxthreads, iterations, gearQueue, tempResultsQueue, progressQueue):
+	threads = maxthreads if isLastIteration(iterations) else 1
+	while True:
+		startTime = time.time()
+		gear = gearQueue.get()
+		newResult = False
+		if gear is None:
+			break
+		if gear is not False:
+			profile["talentset"] = gear[1]
+			newResult = runSim(fightStyle, gear[0], profile, metric, statWeights, enemies, iterations, threads)
+			tempResultsQueue.put(newResult)
+		progressQueue.put(not newResult is False)
+
+def resultProcesser(tempResultsQueue, resultsQueue, metric):
+	bestResult = (None, None)
+	while True:
+		tempResult = tempResultsQueue.get()
+		if tempResult is None:
+			break
+
+		if tempResult is not False:
+			if bestResult[0] is None:
+				bestResult = (tempResult[metric], tempResult["error"])
+
+			bestMetric = bestResult[0]
+			bestError = bestResult[1]
+
+			if resultsQueue.qsize() > minResultSize:
+				if metric in smallestMetrics:
+					if (tempResult[metric] - tempResult["error"]) > bestMetric:
+						tempResult = False
+					elif tempResult[metric] < bestMetric:
+						bestResult = (tempResult[metric], tempResult["error"])
+				else:
+					if (tempResult[metric] + tempResult["error"]) < bestMetric:
+						tempResult = False
+					elif tempResult[metric] > bestMetric:
+						bestResult = (tempResult[metric], tempResult["error"])
+				
+		resultsQueue.put(tempResult)
 
 def getBestSimResults(metric, simResults, minResults=None):
 	logger.debug("started getBestSimResults()")
@@ -137,61 +178,19 @@ def getBestSimResults(metric, simResults, minResults=None):
 	logger.debug("done getBestSimResults()")
 	return bestSimResults
 
-def runSimsSingleWide(simInputs, maxThreads):
-	logger.debug("started runSimsSingleWide()")
-	simResults = []
-	for simInput in simInputs:
-		simInput.append(maxThreads)
-		simResults.append(runSim(*simInput))
-	return simResults
-
-def runSimsMultiThread(simInputs, maxthreads):
-	logger.debug("started runSimsMultiThread()")
-	simStartTime = time.time()
-	lastTime = simStartTime
-
-	logger.debug("creating thread pool in runSimsMultiThread()")
-	pool = multiprocessing.Pool(min(int(maxthreads), len(simInputs)))
-	logger.debug("done creating thread pool in runSimsMultiThread()")
-
-	completedProfiles = 0
-
-	try:
-		logger.debug("running threads in runSimsMultiThread()")
-		simDicts = pool.starmap(runSim, simInputs)
-		logger.debug("done running threads in runSimsMultiThread()")
-		pool.close()
-	except KeyboardInterrupt:
-		pool.terminate()
-		print("---Simming cancelled by user after %s profiles---" % completedProfiles)
-		sys.exit(1)
-	except Exception as e:
-		pool.terminate()
-		print('---Simming cancelled by exception: %r, terminating---' % e)
-		traceback.print_exc()
-		sys.exit(2)
-	finally:
-		pool.join()
-	logger.debug("done runSimsMultiThread()")
-	return simDicts
-
-def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies, iterations, maxthreads="1"):
+def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies, iterations, threads="1"):
 	logger.debug("started runSim()")
-	simProfile = generateGearProfile("easc", equippedGear, configProfile, enemies)
+	simProfile = generateProfile("easc", equippedGear, configProfile, enemies)
 
-	simcCall = ["simcraft/simc.exe", "threads=%s" % maxthreads, "fight_style=%s" % fightStyle, "iterations=%s" % iterations]
+	simcCall = ["simcraft/simc.exe", "threads=%s" % threads, "fight_style=%s" % fightStyle, "iterations=%s" % iterations]
 	simcCall.extend(simProfile)
 
-	isLastIteration = (iterations == iterationSequence[len(iterationSequence)-1])
-
-	if isLastIteration:
+	if isLastIteration(iterations):
 		if statWeights != "0":
 			simcCall.append("calculate_scale_factors=1")
 
 			if metric == "tmi":
 				simcCall.append("scale_over=tmi")
-
-	simcCall.append("html=temp.html")
 
 	simcOutput = subprocess.check_output(simcCall, stderr=subprocess.DEVNULL).decode("utf-8")
 
@@ -208,7 +207,7 @@ def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies
 		"enemies": enemies
 	}
 
-	if isLastIteration:
+	if isLastIteration(iterations):
 		if statWeights == "1":
 			simDict["scaleFactors"] = getScaleFactors(simcOutput)
 		simDict["stats"] = getCharStats(simcOutput)
@@ -216,32 +215,61 @@ def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies
 	logger.debug("done runSim()")
 	return simDict
 
-def printProgressBar(completed, totalSize, stageTime, totalIterationTime, prefix = '', suffix = '', decimals = 1, length = 50, fill = '|'):
-	logger.debug("started printProgressBar()")
-	percent = ("{0:." + str(decimals) + "f}").format(100 * (completed / float(totalSize)))
+def printProgress(totalCount, progressQueue, iterations):
+	completed = 0
+	valid = 0
+	startTime = time.time()
+	while True:
+		while not progressQueue.empty():
+			try:
+				newProgress = progressQueue.get(timeout=1)
+			except:
+				newProgress = 0
+				pass
+			if newProgress is None:
+				print("%s simulations completed in %s                                                                 " % (totalCount, "{0:03.1f}".format(time.time() - startTime)))
+				return
+			if newProgress is not 0:
+				completed += 1
+				if newProgress:
+					valid += 1
 
-	filledLength = int(length * completed // totalSize)
-	bar = fill * filledLength + '-' * (length - filledLength)
-
-	if completed == 0:
-		print('\r%s <%s> %s%% %s' %
-				(prefix, bar, percent, suffix), end = '\r')
-		return
-
-	estRemaining = 0
-	if completed < totalSize:
-		remainingSeconds = (totalIterationTime/completed)*(totalSize-completed)
-		estRemaining = math.ceil(remainingSeconds/60)
-		if estRemaining < 5:
-			m, s = divmod(remainingSeconds, 60)
-			print('\r%s <%s> %s%% %s (Estimated remaining time: %s:%s)      ' %
-				(prefix, bar, percent, suffix, "{0:02d}".format(int(m)), "{0:02.0f}".format(math.ceil(s))), end = '\r')
+		runTime = time.time() - startTime
+		if completed > 0:
+			timePerSim = runTime / completed
+			remainingTime = (timePerSim * (totalCount - completed))
+			if valid != completed:
+				print("\rCompleted %s valid sims out of %s total (%s invalid) in %s (%s remaining)" % (completed, totalCount, (completed-valid), "{0:03.1f}".format(runTime), "{0:03.1f}".format(remainingTime)), end = '\r')
+			else:
+				print("\rCompleted %s valid sims out of %s total in %s (%s remaining)             " % (completed, totalCount, "{0:03.1f}".format(runTime), "{0:03.1f}".format(remainingTime)), end = '\r')
 		else:
-			print('\r%s <%s> %s%% %s (Estimated remaining time: %s %s)      ' %
-				(prefix, bar, percent, suffix, estRemaining, "minutes" if estRemaining != 1 else "minute"), end = '\r')
-	else:
-		m, s = divmod(totalIterationTime, 60)
-		print('\r%s <%s> %s%% %s (Time taken: %s:%s)						           '
-			% (prefix, bar, percent, suffix, "{0:02d}".format(int(m)), "{0:04.1f}".format(s)))
-		print()
-	logger.debug("done printProgressBar()")
+			print("\rSimulations in progress. Elapsed: %s                                                             " % ("{0:03.1f}".format(runTime)), end="\r")
+			# print("Completed %s sims out of %s total in %s (%s remaining)                       " % (completed, totalCount, runTime, remainingTime))
+		time.sleep(1)
+
+def generateProfile(outputFileName, equippedGear, configProfile, enemies):
+	logger.debug("started generateGearProfile()")
+	gearProfile = []
+	gearProfile.append("%s=%s_%s" % (configProfile["class"], configProfile["profilename"], outputFileName))
+	gearProfile.append("specialization=%s" % (configProfile["spec"]))
+	gearProfile.append("race=%s" % (configProfile["race"]))
+	gearProfile.append("level=%s" % (configProfile["level"]))
+	gearProfile.append("role=%s" % (configProfile["role"]))
+	gearProfile.append("position=%s" % (configProfile["position"]))
+	gearProfile.append("talents=%s" % (configProfile["talentset"]))
+	gearProfile.append("artifact=%s" % (configProfile["artifact"]))
+	gearProfile.append("crucible=%s" % (configProfile["crucible"]))
+	gearProfile.append("skill=%s" % (float(configProfile["skill"]) / 100))
+
+	for slot, gear in equippedGear.items():
+		if gear != "":
+			gearProfile.append("%s=%s" % (slot, (gear if gear[0]!="L" else gear[1:])))
+
+	try:
+		for i in range(int(enemies)):
+			gearProfile.append("enemy=enemy_%s" % i)
+	except:
+		pass
+
+	logger.debug("done generateGearProfile()")
+	return gearProfile

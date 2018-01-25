@@ -21,7 +21,7 @@ def main():
 	print("Using %s threads" % config["Sim"]["maxthreads"])
 	print()
 
-	generatedGear = generateGear(config["Gear"])
+	# generatedGear = generateGear(config["Gear"])
 
 	metric = config["Sim"]["metric"]
 	statWeights = config["Sim"]["statweights"]
@@ -39,7 +39,7 @@ def main():
 			else:
 				print("---Simming %s---" % fightStyle)
 			simInputs = []
-			topSims[fightStyle][enemies] = getTopSims(fightStyle, generatedGear["valid"], config["Profile"], config["Sim"]["maxthreads"], metric, statWeights, enemies)
+			topSims[fightStyle][enemies] = getTopSims(fightStyle, config["Gear"], config["Profile"], config["Sim"]["maxthreads"], metric, statWeights, enemies)
 
 	indexName = createIndex(topSims, config["Profile"]["profilename"])
 	print("---Results available at: %s---" % (indexName))
@@ -340,4 +340,5 @@ if __name__ == "__main__":
 	main()
 	timeSeconds = (time.time() - start_time)
 	m, s = divmod(timeSeconds, 60)
-	print("--- Full execution in %s:%s ---" % ('{0:02d}'.format(int(m)), "{0:04.1f}".format(s)))
+	print()
+	print("---Full execution in %s:%s ---" % ('{0:02d}'.format(int(m)), "{0:04.1f}".format(s)))
