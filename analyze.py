@@ -11,7 +11,7 @@ logger = logging.getLogger()
 def processOutput(simcOutput, metric):
 	logger.debug("started processOutput()")
 	for line in simcOutput.split("\n"):
-		if "%s:" % metric.upper() in line:
+		if "%s:" % metric.upper() in line or "%s=" % metric.upper() in line:
 			vals = re.findall("\d+\.?\d*", line)
 			return (float(vals[0]), float(vals[1]))
 
