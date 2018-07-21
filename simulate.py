@@ -257,8 +257,6 @@ def generateProfile(outputFileName, equippedGear, configProfile, enemies):
 	gearProfile.append("role=%s" % (configProfile["role"]))
 	gearProfile.append("position=%s" % (configProfile["position"]))
 	gearProfile.append("talents=%s" % (configProfile["talentset"]))
-	gearProfile.append("artifact=%s" % (configProfile["artifact"]))
-	gearProfile.append("crucible=%s" % (configProfile["crucible"]))
 	gearProfile.append("skill=%s" % (float(configProfile["skill"]) / 100))
 	if "max_time" in configProfile:
 		gearProfile.append("max_time=%s" % (configProfile["max_time"]))
