@@ -21,23 +21,17 @@ iterationSequence = [10,100,500,5000,15000]
 def getTopSims(fightStyle, gearList, profile, maxthreads, metric, statWeights, enemies):
 	logger.debug("started getTopSims()")
 	return getBestSimResults(metric, runSims(fightStyle, gearList, profile, maxthreads, metric, statWeights, enemies))
-	logger.debug("done getTopSims()")
 
 def runSims(fightStyle, gearList, profile, maxthreads, metric, statWeights, enemies):
 	logger.debug("started runSims()")
-	gearIterations = {}
 
 	talentSets = profile["talents"].split(",")
-	topSims = []
 	maxthreads = int(maxthreads)
-	totalSimTime = 0
 
 	simInputs = []
 	simResults = []
 
 	for iterations in iterationSequence:
-		totalIterationGear = len(simInputs)
-
 		if simResults != [] and len(simResults) <= minResultSize:
 			if not isLastIteration(iterations):
 				continue
@@ -113,7 +107,6 @@ def worker(fightStyle, profile, metric, statWeights, enemies, maxthreads, iterat
 def workerRun(fightStyle, profile, metric, statWeights, enemies, maxthreads, iterations, gearQueue, tempResultsQueue, progressQueue):
 	threads = maxthreads if isLastIteration(iterations) else 1
 	while True:
-		startTime = time.time()
 		gear = gearQueue.get()
 		newResult = False
 		if gear is None:
@@ -136,7 +129,6 @@ def resultProcesser(tempResultsQueue, resultsQueue, metric):
 				bestResult = (tempResult[metric], tempResult["error"])
 
 			bestMetric = bestResult[0]
-			bestError = bestResult[1]
 
 			if resultsQueue.qsize() > minResultSize:
 				if metric in smallestMetrics:
@@ -182,7 +174,11 @@ def runSim(fightStyle, equippedGear, configProfile, metric, statWeights, enemies
 	logger.debug("started runSim()")
 	simProfile = generateProfile("easc", equippedGear, configProfile, enemies)
 
-	simcCall = ["simcraft/simc.exe", "threads=%s" % threads, "fight_style=%s" % fightStyle, "iterations=%s" % iterations]
+	if os.name == 'nt':
+		simcProgram = "simc.exe"
+	else:
+		simcProgram = "simc"
+	simcCall = ["simcraft/%s" % simcProgram, "threads=%s" % threads, "fight_style=%s" % fightStyle, "iterations=%s" % iterations]
 	simcCall.extend(simProfile)
 
 	if isLastIteration(iterations):
@@ -220,7 +216,8 @@ def printProgress(totalCount, progressQueue, iterations):
 	valid = 0
 	startTime = time.time()
 	while True:
-		while not progressQueue.empty():
+		loopTime = time.time()
+		while not progressQueue.empty() and (time.time() - loopTime) < 1:
 			try:
 				newProgress = progressQueue.get(timeout=1)
 			except:
@@ -239,9 +236,9 @@ def printProgress(totalCount, progressQueue, iterations):
 			timePerSim = runTime / completed
 			remainingTime = (timePerSim * (totalCount - completed))
 			if valid != completed:
-				print("\rCompleted %s valid sims out of %s total (%s invalid) in %s (%s remaining)" % (completed, totalCount, (completed-valid), "{0:03.1f}".format(runTime), "{0:03.1f}".format(remainingTime)), end = '\r')
+				print("\rCompleted %s valid sims out of %s total (%s invalid) in %s (%s remaining)   " % (completed, totalCount, (completed-valid), "{0:03.1f}".format(runTime), "{0:03.1f}".format(remainingTime)), end = '\r')
 			else:
-				print("\rCompleted %s valid sims out of %s total in %s (%s remaining)             " % (completed, totalCount, "{0:03.1f}".format(runTime), "{0:03.1f}".format(remainingTime)), end = '\r')
+				print("\rCompleted %s valid sims out of %s total in %s (%s remaining)                " % (completed, totalCount, "{0:03.1f}".format(runTime), "{0:03.1f}".format(remainingTime)), end = '\r')
 		else:
 			print("\rSimulations in progress. Elapsed: %s                                                             " % ("{0:03.1f}".format(runTime)), end="\r")
 			# print("Completed %s sims out of %s total in %s (%s remaining)                       " % (completed, totalCount, runTime, remainingTime))
