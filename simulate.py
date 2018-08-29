@@ -59,7 +59,8 @@ def runIterations(simGear, fightStyle, profile, metric, statWeights, enemies, ma
 	resultsList = []
 
 	gearObj = gear.Gear(simGear)
-	totalGearSets = gearObj.getPossibleCount()
+	talentCount = len(talentSets) if talentSets else 1
+	totalGearSets = gearObj.getPossibleCount() * talentCount
 
 	progressProcess = multiprocessing.Process(target=printProgress, name="progress", args=(totalGearSets, progressQueue, iterations))
 	progressProcess.start()
