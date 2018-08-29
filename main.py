@@ -102,6 +102,8 @@ def createIndex(topSims, profileName):
 							wowHeadKey.append("gems=%s" % item["gem_id"].replace("/", ":"))
 						if "enchant_id" in item:
 							wowHeadKey.append("ench=%s" % item["enchant_id"])
+						if "azerite_powers" in item:
+							wowHeadKey.append("azerite-powers=%s" % item["azerite_powers"])
 
 						url = "%s%s" % (link, "&".join(wowHeadKey))
 						link = "<a href='%s' rel='%s'>%s</a>" % (url, "&".join(wowHeadKey), item["id"])
@@ -289,6 +291,8 @@ def loadConfig():
 			config.set("Profile", "profilename", config.get("Profile", "warrior"))
 			config.set("Profile", "class", "warrior")
 
+		config["Profile"]["profilename"] = config["Profile"]["profilename"].replace("\"", "")
+
 	if config.has_option("Profile", "max_time"):
 		try:
 			if int(config["Profile"]["max_time"]) < 0:
@@ -307,6 +311,11 @@ def loadConfig():
 		except Exception:
 			config.remove_option("Profile", "vary_combat_length")
 			print("WARN: vary_combat_length is an invalid value. Defaulting.")
+
+	if not config.has_option("Profile", "position"):
+		config["Profile"]["position"] = "back"
+
+	
 
 	print()
 
